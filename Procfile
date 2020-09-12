@@ -1,1 +1,1 @@
-run: python flask-test.py
+web: gunicorn app:flask-test
