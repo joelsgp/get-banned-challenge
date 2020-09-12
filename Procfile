@@ -1,1 +1,1 @@
-web: gunicorn app:flask-test
+web: gunicorn app:app
