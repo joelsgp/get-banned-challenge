@@ -43,7 +43,7 @@ def meets_interval_requirements(request_ip):
     try:
         # If this doesn't throw and exception, it means the IP is there.
         # Get the last access time of the IP.
-        cur.execute("SELECT access-time FROM recent-ips WHERE ip=%s",
+        cur.execute("SELECT access_time FROM recent_ips WHERE ip=%s",
                     (request_ip,))
         request_timestamp = cur.fetchone()
 
@@ -60,8 +60,8 @@ def meets_interval_requirements(request_ip):
         else:
             # If the interval has passed, reset the timer for the IP.
             cur.execute("""
-                        UPDATE recent-ips
-                        SET access-time=$s
+                        UPDATE recent_ips
+                        SET access_time=$s
                         WHERE ip=$S
                         """,
                         (time(), request_ip))
@@ -70,7 +70,7 @@ def meets_interval_requirements(request_ip):
         request_interval_seconds = None
         # If the IP has never visited before, add it to the database.
         cur.execute("""
-                    INSERT INTO recent-ips(ip, access-time)
+                    INSERT INTO recent_ips(ip, access_time)
                     VALUES(%s, %s)
                     """,
                     (request_ip, time()))
