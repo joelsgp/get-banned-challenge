@@ -47,7 +47,9 @@ def hello_world():
 ##        else:
 ##            recent_ips[request_ip] = time()
 
-    easter_egg = "there is no frontend, take off your clothes, bottom text"
+    easter_egg = """
+                 <!--there is no frontend, take off your clothes, bottom text-->
+                 """
     return "hello world {}{}".format(request_ip, easter_egg)
 
 if __name__ == '__main__':
