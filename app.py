@@ -66,7 +66,7 @@ def meets_interval_requirements(request_ip):
                         """,
                         (time(), request_ip))
         
-    except ProgrammingError:
+    except psycopg2.ProgrammingError:
         request_interval_seconds = None
         # If the IP has never visited before, add it to the database.
         cur.execute("""
