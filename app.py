@@ -95,6 +95,8 @@ def meets_interval_requirements(request_ip):
 @app.route("/")
 def hello_world():
     # La meme.
+    # There are no spaces after the commas so I don't have to make it a
+    # multi line string lol
     easter_egg = "<!--there is no frontend,take off your clothes,bottom text-->"
     
     # Get IP for duplication checking
