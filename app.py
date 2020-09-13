@@ -99,8 +99,7 @@ def hello_world():
                IP duplication error: you already requested words
                {} hour(s) ago! Please ensure you wait at least
                "{} hours before requesting new words."
-               """
-               .format(request_interval_hours, INTERVAL_HOURS)
+               """.format(request_interval_hours, INTERVAL_HOURS)
 
     else:
         easter_egg = """
