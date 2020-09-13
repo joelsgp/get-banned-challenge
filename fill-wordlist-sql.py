@@ -38,6 +38,8 @@ conn, cur = postgresql_connect()
 
 #Iterate through the wordlist, adding each word to the database.
 for i in range(len(words_list)):
+    if i % 1000 == 0:
+        print("Done {} so far".format(i))
     cur.execute("""
                 INSERT INTO wordlist(id, word, used)
                 VALUES (%s, %s, FALSE)
