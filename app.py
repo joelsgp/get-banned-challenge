@@ -40,12 +40,12 @@ def meets_interval_requirements(request_ip):
 
     
     # Check if IP is in the recent IPs from the database.
-    try:
-        # If this doesn't throw and exception, it means the IP is there.
-        # Get the last access time of the IP.
-        cur.execute("SELECT access_time FROM recent_ips WHERE ip=%s",
+    cur.execute("SELECT access_time FROM recent_ips WHERE ip=%s",
                     (request_ip,))
-        sql_response = cur.fetchone()
+    sql_response = cur.fetchone()
+    # If the SQL response is not None, it means the IP is there.
+    if sql_response is not None:
+        # Get the last access time of the IP.
         print(cur.fetchall())
         print(request_ip)
         print(sql_response)
@@ -71,7 +71,9 @@ def meets_interval_requirements(request_ip):
                         """,
                         (time(), request_ip))
         
-    except psycopg2.ProgrammingError:
+    else:
+        # The IP wasn't there so set the last request time to None for the
+        # return value.
         request_interval_seconds = None
         # If the IP has never visited before, add it to the database.
         cur.execute("""
