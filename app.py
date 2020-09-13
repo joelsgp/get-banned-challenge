@@ -9,26 +9,34 @@ app = Flask(__name__)
 
 
 DATABASE_URL = os.environ["DATABASE_URL"]
+# This is the enforced interval between providing new words.
+INTERVAL_HOURS = 6
 
 # Function to connect to default main SQL database.
+# Returns connection and cursor.
 def postgresql_connect():
     conn = psycopg2.connect(DATABASE_URL, sslmode='require')
     cur = conn.cursor()
-    return cur
-    
+    return conn, cur
 
-# This is what runs when you go to the "homepage"
-@app.route("/")
-def hello_world():
-    # Get IP for duplication checking
-    request_ip = request.remote_addr
+# Function to close the connection to the database.
+# Takes a connection and a cursor as arguments.
+def postgresql_disconnect(conn, cur):
+    cur.close()
+    conn.close()
 
-    # This is the enforced interval between providing new words.
-    interval_hours = 6
-    interval_seconds = interval_hours * (60^2)
+
+# Function to check if the requesting IP has not made a request within the
+# time interval.
+# Returns a boolean that is true if the IP has not made a request within the
+# time interval, and the time since last request in seconds, which will
+# be None if no recent request had been made.
+def meets_interval_requirements(ip):
+    # Get the enforced interval between providing new words in seconds.
+    interval_seconds = INTERVAL_HOURS * (60^2)
 
     # Connect to PostgreSQL database
-    cur = postgresql_connect()
+    conn, cur = postgresql_connect()
 
     
     # Check if IP is in the recent IPs from the database.
@@ -39,28 +47,67 @@ def hello_world():
                     (request_ip,))
         request_timestamp = cur.fetchone()
 
+        # Calculate the time since last request.
+        request_interval_seconds = time()-request_timestamp
+        
         # Check if IP requested less than 6 hours ago
         if request_timestamp > time()-interval_seconds:
-            # If the interval has not yet passed, inform the user.
-            # Calculate the time since last request.
-            request_interval_seconds = time()-request_timestamp
-            request_interval_hours = request_interval_seconds / (60^2)
+            # If the interval has not yet passed, return False.
+            # First close the connection to the SQL server.
+            postgresql_disconnect(conn, cur)
+            return False, request_interval_seconds
 
-            return """
-                   IP duplication error: you already requested words
-                   {} hour(s) ago! Please ensure you wait at least
-                   "{} hours before requesting new words."
-                   """
-                   .format(recent_request_interval_hours, interval_hours)
-        
+        else:
+            # If the interval has passed, reset the timer for the IP.
+            cur.execute("""
+                        UPDATE recent-ips
+                        SET access-time=$s
+                        WHERE ip=$S
+                        """,
+                        (time(), request_ip))
         
     except ProgrammingError:
+        request_interval_seconds = None
         # If the IP has never visited before, add it to the database.
         cur.execute("""
                     INSERT INTO recent-ips(ip, access-time)
                     VALUES(%s, %s)
                     """,
                     (request_ip, time()))
+
+    # If the function reaches this point then the interval has passed
+    # or the IP has never made a request before. Return True.
+    # First commit the changes and close connection to the SQL server.
+    conn.commit()
+    postgresql_disconnect(conn, cur)
+    return True, request_interval_seconds
+
+    
+
+# This is what runs when you go to the "homepage"
+@app.route("/")
+def hello_world():
+    # Get IP for duplication checking
+    request_ip = request.remote_addr
+
+    # check will be True if we are ok to send new words.
+    check, request_interval_seconds = meets_interval_requirements(request_ip)
+    if not check:
+        request_interval_hours = request_interval_seconds / (60^2)
+
+        return """
+               IP duplication error: you already requested words
+               {} hour(s) ago! Please ensure you wait at least
+               "{} hours before requesting new words."
+               """
+               .format(request_interval_hours, INTERVAL_HOURS)
+
+    else:
+        easter_egg = """
+                     <!--there is no frontend,
+                     take off your clothes, bottom text-->
+                     """
+    return "hello world {}{}".format(request_ip, easter_egg)
 
 
 ##    # If IP is on record, check if it accessed less than 6 hours ago
@@ -78,13 +125,6 @@ def hello_world():
 ##        else:
 ##            # Otherwise, add to/update the record.
 ##            recent_ips[request_ip] = time()
-
-
-
-    easter_egg = """
-                 <!--there is no frontend, take off your clothes, bottom text-->
-                 """
-    return "hello world {}{}".format(request_ip, easter_egg)
 
 
 
