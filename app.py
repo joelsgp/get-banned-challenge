@@ -94,6 +94,9 @@ def meets_interval_requirements(request_ip):
 # This is what runs when you go to the "homepage"
 @app.route("/")
 def hello_world():
+    # La meme.
+    easter_egg = "<!--there is no frontend,take off your clothes,bottom text-->"
+    
     # Get IP for duplication checking
     request_ip = request.remote_addr
 
@@ -105,15 +108,13 @@ def hello_world():
         return """
                IP duplication error: you already requested words
                {} hour(s) ago! Please ensure you wait at least
-               "{} hours before requesting new words."
-               """.format(request_interval_hours, INTERVAL_HOURS)
+               {} hours before requesting new words.{}
+               """.format(request_interval_hours,
+                          INTERVAL_HOURS,
+                          easter_egg)
 
     else:
-        easter_egg = """
-                     <!--there is no frontend,
-                     take off your clothes, bottom text-->
-                     """
-    return "hello world {}{}".format(request_ip, easter_egg)
+        return "hello world {}{}".format(request_ip, easter_egg)
 
 
 ##    # If IP is on record, check if it accessed less than 6 hours ago
