@@ -46,8 +46,9 @@ def hello_world():
 ##                   .format(recent_request_interval_hours, interval_hours)
 ##        else:
 ##            recent_ips[request_ip] = time()
-    
-    return "hello world {}".format(request_ip)
+
+    easter_egg = "there is no frontend, take off your clothes, bottom text"
+    return "hello world {}{}".format(request_ip, easter_egg)
 
 if __name__ == '__main__':
     app.run()
