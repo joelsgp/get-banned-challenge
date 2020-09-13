@@ -31,7 +31,7 @@ def postgresql_disconnect(conn, cur):
 # Returns a boolean that is true if the IP has not made a request within the
 # time interval, and the time since last request in seconds, which will
 # be None if no recent request had been made.
-def meets_interval_requirements(ip):
+def meets_interval_requirements(request_ip):
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60^2)
 
