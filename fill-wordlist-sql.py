@@ -40,7 +40,7 @@ conn, cur = postgresql_connect()
 for i in range(len(words_list)):
     cur.execute("""
                 INSERT INTO wordlist(id, word, used)
-                VALUES ($s, $s, FALSE)
+                VALUES (%s, %s, FALSE)
                 """,
                 (i, words_list[i]))
 

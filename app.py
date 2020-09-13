@@ -66,8 +66,8 @@ def meets_interval_requirements(request_ip):
             # If the interval has passed, reset the timer for the IP.
             cur.execute("""
                         UPDATE recent_ips
-                        SET access_time=$s
-                        WHERE ip=$S
+                        SET access_time=%s
+                        WHERE ip=%s
                         """,
                         (time(), request_ip))
         
