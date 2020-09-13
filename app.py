@@ -117,23 +117,6 @@ def hello_world():
         return "hello world {}{}".format(request_ip, easter_egg)
 
 
-##    # If IP is on record, check if it accessed less than 6 hours ago
-##    if request_ip in recent_ips:
-##        if recent_ips[request_ip] > time()-interval_seconds:
-##            # Calculate the time since last request
-##            request_interval_seconds = time()-recent_ips[request_ip]
-##            request_interval_hours = request_interval_seconds / (60^2)
-##            return """
-##                   IP duplication error: you already requested words
-##                   {} hour(s) ago! Please ensure you wait at least
-##                   "{} hours before requesting new words."
-##                   """
-##                   .format(recent_request_interval_hours, interval_hours)
-##        else:
-##            # Otherwise, add to/update the record.
-##            recent_ips[request_ip] = time()
-
-
 
 if __name__ == '__main__':
     app.run()
