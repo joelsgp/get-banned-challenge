@@ -46,9 +46,9 @@ def meets_interval_requirements(request_ip):
         cur.execute("SELECT access_time FROM recent_ips WHERE ip=%s",
                     (request_ip,))
         sql_response = cur.fetchone()
-        request_timestamp = sql_response[0]
         print(request_ip)
         print(sql_response)
+        request_timestamp = sql_response[0]
         print(request_timestamp)
 
         # Calculate the time since last request.
