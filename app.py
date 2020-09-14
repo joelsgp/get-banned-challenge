@@ -168,7 +168,7 @@ def hello_world():
 
     else:
         message = generate_message()
-        return "hello world {} {}{}".format(request_ip, , message, easter_egg)
+        return "hello world {} {}{}".format(request_ip, message, easter_egg)
 
 
 
