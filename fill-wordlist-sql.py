@@ -64,4 +64,4 @@ psycopg2.extras.execute_batch(cur,
 
 # Commit and disconnect from server.
 conn.commit()
-postgresaql_disconnect(conn, cur)
+postgresql_disconnect(conn, cur)
