@@ -89,7 +89,58 @@ def meets_interval_requirements(request_ip):
     postgresql_disconnect(conn, cur)
     return True, request_interval_seconds
 
+
+
+# Function to generate the message of words to send to the user!
+# Returns the message as a string.
+def generate_message(len_limit=2000, suffix=" Heap."):
+    # Connect to PostgreSQL database.
+    conn, cur = postgresql_connect()
     
+    # This variable will track the cumultive length of each word chosen.
+    cum_length = 0
+    # Declare a variable for the message words as an empty list.
+    message_words = []
+
+    # Keep adding words until you reach the discord char limit.
+    print("Generating message.")
+    while cum_length < len_limit:
+        # Generate a random word.
+        cur.execute("""
+                    SELECT id,word FROM wordlist
+                    WHERE used=FALSE
+                    ORDER BY RAND()
+                    LIMIT 1
+                    """)
+        sql_response = cur.fetchone()
+        word_id = sql_response[0]
+        word = sql_response[1]
+
+        message_words.append(word)
+        cum_length += len(word)+1
+
+        # Mark the word as used on the database.
+        cur.execute("""
+                    UPDATE wordlist
+                    SET used = TRUE
+                    WHERE id=%s
+                    """,
+                    (word_id,))
+
+        # Commit the changes and close connection to the SQL server.
+        conn.commit()
+        postgresql_disconnect(conn, cur)
+        
+        # Join and return the message.
+        message = " ".join(message_words)
+        message += suffix
+        print("Generated message with length {}.".format(len(message)))
+
+        # Here is your message!
+        print("Here is your message!\n")
+        return message
+    
+
 
 # This is what runs when you go to the "homepage"
 @app.route("/")
@@ -116,7 +167,8 @@ def hello_world():
                           easter_egg)
 
     else:
-        return "hello world {}{}".format(request_ip, easter_egg)
+        message = generate_message()
+        return "hello world {} {}{}".format(request_ip, , message, easter_egg)
 
 
 
