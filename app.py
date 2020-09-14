@@ -127,18 +127,18 @@ def generate_message(len_limit=2000, suffix=" Heap."):
                     """,
                     (word_id,))
 
-        # Commit the changes and close connection to the SQL server.
-        conn.commit()
-        postgresql_disconnect(conn, cur)
-        
-        # Join and return the message.
-        message = " ".join(message_words)
-        message += suffix
-        print("Generated message with length {}.".format(len(message)))
+    # Commit the changes and close connection to the SQL server.
+    conn.commit()
+    postgresql_disconnect(conn, cur)
+    
+    # Join and return the message.
+    message = " ".join(message_words)
+    message += suffix
+    print("Generated message with length {}.".format(len(message)))
 
-        # Here is your message!
-        print("Here is your message!\n")
-        return message
+    # Here is your message!
+    print("Here is your message!\n")
+    return message
     
 
 
