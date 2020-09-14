@@ -1,8 +1,8 @@
 [*] = done
 
-fix issues recorded on github
-add code to generate words
+[ ]fix issues recorded on github
+[*]add code to generate words
 [*]finish filling sql wordlist
-test test test
-
-add to TODO
+[ ]fix wrong ip address being got
+[ ]add additional duplication checking using cookies?
+[ ]test test test
