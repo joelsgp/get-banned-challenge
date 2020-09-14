@@ -157,7 +157,7 @@ def hello_world():
     if not check:
         request_interval_hours = request_interval_seconds / (60**2)
         print("""
-              {}: Unsuccessful request.
+              Logs: {} - Unsuccessful request.
               Last requested {} hours ago.
               Required interval is {} hours.
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
@@ -173,7 +173,7 @@ def hello_world():
 
     else:
         print("""
-              {}: Successful request.
+              Logs: {} - Successful request.
               Last requested {} hours ago.
               Required interval is {} hours.
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
