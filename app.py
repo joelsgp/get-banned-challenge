@@ -154,7 +154,11 @@ def hello_world():
 
     # check will be True if we are ok to send new words.
     check, request_interval_seconds = meets_interval_requirements(request_ip)
-    request_interval_hours = request_interval_seconds / (60**2)
+    if request_interval_seconds is not None:
+        request_interval_hours = request_interval_seconds / (60**2)
+    else:
+        request_interval_hours = None
+        
     if not check:
         print("""
               Logs: {} - Unsuccessful request.
