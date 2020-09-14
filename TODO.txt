@@ -6,5 +6,6 @@
 [*]finish filling sql wordlist
 [*]fix wrong ip address being got
 [/]add additional duplication checking using cookies?
+[ ]Fix messages being too long
 [ ]optimise for more speed
 [ ]test test test
