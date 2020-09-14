@@ -109,7 +109,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
         cur.execute("""
                     SELECT id,word FROM wordlist
                     WHERE used=FALSE
-                    ORDER BY RAND()
+                    ORDER BY RANDOM()
                     LIMIT 1
                     """)
         sql_response = cur.fetchone()
