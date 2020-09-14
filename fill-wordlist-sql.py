@@ -2,12 +2,15 @@ import csv
 import psycopg2
 import psycopg2.extras
 
+from time import time
+
 # Path to csv file with wordlist.
 words_file_path = "archive/words.csv"
 
 # Read the file and put the words into a python list words_list.
 with open(words_file_path, "r") as words_file:
     words_reader = csv.reader(words_file)
+    print("Read words file.")
     print(words_reader)
     words_list = words_reader.__next__()
     print(len(words_list))
@@ -37,29 +40,21 @@ def postgresql_disconnect(conn, cur):
 conn, cur = postgresql_connect()
 
 
-#Iterate through the wordlist, adding each word to the database.
-# NOTE/TODO: this is very inefficient I think. If I get bored enough while
-#            it's running I'll try to improve it.
-# Reference material:
-# https://stackoverflow.com/questions/8134602/psycopg2-insert-multiple-rows-with-one-query
-# https://www.psycopg.org/docs/cursor.html executemany
-# https://www.psycopg.org/docs/extras.html#fast-exec
-##for i in range(len(words_list)):
-##    if i % 100 == 0:
-##        print("Done {} so far".format(i))
-##    cur.execute("""
-##                INSERT INTO wordlist(id, word, used)
-##                VALUES (%s, %s, FALSE)
-##                """,
-##                (i, words_list[i]))
-
+# Create list of tuples with arguments.
 args_list = [(i, words_list[i]) for i in range(len(words_list))]
+print("Prepared argument list.")
+start_time = time()
+# Run on SQL server.
 psycopg2.extras.execute_batch(cur,
                               """
                               INSERT INTO wordlist(id, word, used)
                               VALUES (%s, %s, FALSE)
                               """,
                               args_list)
+
+print("""
+      Wrote {} columns to server in {} seconds, committing
+      """.format(len(words_list, time()-start_time)))
 
 
 # Commit and disconnect from server.
