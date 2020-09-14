@@ -2,6 +2,7 @@ import os
 import psycopg2
 from time import time
 from flask import Flask, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 # Create "app"
@@ -172,6 +173,9 @@ def hello_world():
         return "hello world {} {}{}".format(request_ip, message, easter_egg)
 
 
+# This makes it so that request.remote_addr will
+# show the real ip and not localhost.
+app = ProxyFix(app)
 
 if __name__ == '__main__':
     app.run()
