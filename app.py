@@ -48,10 +48,8 @@ def meets_interval_requirements(request_ip):
     # If the SQL response is not None, it means the IP is there.
     if sql_response is not None:
         # Get the last access time of the IP.
-        print(request_ip)
-        print(sql_response)
         request_timestamp = sql_response[0]
-        print(request_timestamp)
+        print("Logs: last request by this IP at {}".format(request_timestamp))
 
         # Calculate the time since last request.
         request_interval_seconds = time()-request_timestamp
@@ -104,7 +102,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     message_words = []
 
     # Keep adding words until you reach the discord char limit.
-    print("Generating message.")
+    print("Logs: Generating message.")
     while cum_length < len_limit-len(suffix):
         # Generate a random word.
         cur.execute("""
@@ -135,10 +133,10 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     # Join and return the message.
     message = " ".join(message_words)
     message += suffix
-    print("Generated message with length {}.".format(len(message)))
+    print("Logs: Generated message with length {}.".format(len(message)))
 
     # Here is your message!
-    print("Here is your message!\n")
+    print("Logs: Here is your message!")
     return message
     
 
@@ -158,6 +156,11 @@ def hello_world():
     check, request_interval_seconds = meets_interval_requirements(request_ip)
     if not check:
         request_interval_hours = request_interval_seconds / (60**2)
+        print("""
+              {}: Unsuccessful request.
+              Last requested {} hours ago.
+              Required interval is {} hours.
+              """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
 
         return """
                IP duplication error: {}, you already requested words
@@ -169,6 +172,12 @@ def hello_world():
                           easter_egg)
 
     else:
+        print("""
+              {}: Successful request.
+              Last requested {} hours ago.
+              Required interval is {} hours.
+              """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
+        
         message = generate_message()
         return "hello world {} {}{}".format(request_ip, message, easter_egg)
 
