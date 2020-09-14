@@ -46,7 +46,6 @@ def meets_interval_requirements(request_ip):
     # If the SQL response is not None, it means the IP is there.
     if sql_response is not None:
         # Get the last access time of the IP.
-        print(cur.fetchall())
         print(request_ip)
         print(sql_response)
         request_timestamp = sql_response[0]

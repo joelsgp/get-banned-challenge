@@ -5,4 +5,5 @@
 [*]finish filling sql wordlist
 [ ]fix wrong ip address being got
 [ ]add additional duplication checking using cookies?
+[ ]optimise for more speed
 [ ]test test test
