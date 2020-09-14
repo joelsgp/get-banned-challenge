@@ -7,5 +7,6 @@
 [*]fix wrong ip address being got
 [/]add additional duplication checking using cookies?
 [ ]Fix messages being too long
-[ ]optimise for more speed
+[ ]optimise for more speed (sql queries in generate_message mostly)
+[ ]add indicator of progress through wordlist on requests
 [ ]test test test
