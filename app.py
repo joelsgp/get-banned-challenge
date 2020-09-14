@@ -10,7 +10,8 @@ app = Flask(__name__)
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 # This is the enforced interval between providing new words.
-INTERVAL_HOURS = 6
+##INTERVAL_HOURS = 6
+INTERVAL_HOURS = 0.005
 
 # Function to connect to default main SQL database.
 # Returns connection and cursor.
@@ -158,10 +159,11 @@ def hello_world():
         request_interval_hours = request_interval_seconds / (60**2)
 
         return """
-               IP duplication error: you already requested words
+               IP duplication error: {}, you already requested words
                {} hour(s) ago! Please ensure you wait at least
                {} hours before requesting new words.{}
-               """.format(request_interval_hours,
+               """.format(request_ip
+                          request_interval_hours,
                           INTERVAL_HOURS,
                           easter_egg)
 
