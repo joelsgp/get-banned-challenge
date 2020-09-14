@@ -1,5 +1,6 @@
 import csv
 import psycopg2
+import psycopg2.extras
 
 # Path to csv file with wordlist.
 words_file_path = "archive/words.csv"
@@ -43,14 +44,22 @@ conn, cur = postgresql_connect()
 # https://stackoverflow.com/questions/8134602/psycopg2-insert-multiple-rows-with-one-query
 # https://www.psycopg.org/docs/cursor.html executemany
 # https://www.psycopg.org/docs/extras.html#fast-exec
-for i in range(len(words_list)):
-    if i % 100 == 0:
-        print("Done {} so far".format(i))
-    cur.execute("""
-                INSERT INTO wordlist(id, word, used)
-                VALUES (%s, %s, FALSE)
-                """,
-                (i, words_list[i]))
+##for i in range(len(words_list)):
+##    if i % 100 == 0:
+##        print("Done {} so far".format(i))
+##    cur.execute("""
+##                INSERT INTO wordlist(id, word, used)
+##                VALUES (%s, %s, FALSE)
+##                """,
+##                (i, words_list[i]))
+
+args_list = [(i, words_list[i]) for i in range(len(words_list))]
+psycopg2.extras.execute_batch(cur,
+                              """
+                              INSERT INTO wordlist(id, word, used)
+                              VALUES (%s, %s, FALSE)
+                              """,
+                              args_list)
 
 
 # Commit and disconnect from server.
