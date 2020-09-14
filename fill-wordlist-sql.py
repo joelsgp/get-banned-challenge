@@ -37,6 +37,12 @@ conn, cur = postgresql_connect()
 
 
 #Iterate through the wordlist, adding each word to the database.
+# NOTE/TODO: this is very inefficient I think. If I get bored enough while
+#            it's running I'll try to improve it.
+# Reference material:
+# https://stackoverflow.com/questions/8134602/psycopg2-insert-multiple-rows-with-one-query
+# https://www.psycopg.org/docs/cursor.html executemany
+# https://www.psycopg.org/docs/extras.html#fast-exec
 for i in range(len(words_list)):
     if i % 100 == 0:
         print("Done {} so far".format(i))
