@@ -33,7 +33,7 @@ def postgresql_disconnect(conn, cur):
 # be None if no recent request had been made.
 def meets_interval_requirements(request_ip):
     # Get the enforced interval between providing new words in seconds.
-    interval_seconds = INTERVAL_HOURS * (60^2)
+    interval_seconds = INTERVAL_HOURS * (60**2)
 
     # Connect to PostgreSQL database
     conn, cur = postgresql_connect()
@@ -155,7 +155,7 @@ def hello_world():
     # check will be True if we are ok to send new words.
     check, request_interval_seconds = meets_interval_requirements(request_ip)
     if not check:
-        request_interval_hours = request_interval_seconds / (60^2)
+        request_interval_hours = request_interval_seconds / (60**2)
 
         return """
                IP duplication error: you already requested words
