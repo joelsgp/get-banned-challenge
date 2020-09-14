@@ -104,7 +104,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
 
     # Keep adding words until you reach the discord char limit.
     print("Generating message.")
-    while cum_length < len_limit:
+    while cum_length < len_limit-len(suffix):
         # Generate a random word.
         cur.execute("""
                     SELECT id,word FROM wordlist
