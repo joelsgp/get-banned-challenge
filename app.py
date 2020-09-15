@@ -203,7 +203,7 @@ def hello_world():
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
         
         message = generate_message()
-        return "hello world {} {}{}".format(request_ip, message, easter_egg)
+        return "hello world {}\n{}{}".format(request_ip, message, easter_egg)
 
 
 
