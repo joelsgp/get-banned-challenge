@@ -102,20 +102,25 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     
     # This variable will track the cumultive length of each word chosen.
     cum_length = 0
+    len_limit_actual = len_limit-len(suffix)
     # Declare a variables for the message words as an empty list.
     message_words = []
     message_words_tuples = []
 
+    #Fetch a number of random words from the server.
+    cur.execute("""
+                SELECT id,word FROM wordlist
+                WHERE used=FALSE
+                ORDER BY RANDOM()
+                LIMIT %s
+                """,
+                (len_limit_actual/2,))
+
     # Keep adding words until you reach the discord char limit.
     print("Logs: Generating message.")
-    while cum_length < len_limit-len(suffix):
-        # Generate a random word.
-        cur.execute("""
-                    SELECT id,word FROM wordlist
-                    WHERE used=FALSE
-                    ORDER BY RANDOM()
-                    LIMIT 1
-                    """)
+    while cum_length < len_limit_actual:
+
+        
         sql_response = cur.fetchone()
         word_id = sql_response[0]
         word = sql_response[1]
@@ -124,13 +129,6 @@ def generate_message(len_limit=2000, suffix=" Heap."):
         message_words.append(word)
         cum_length += len(word)+1
 
-##        # Mark the word as used on the database.
-##        cur.execute("""
-##                    UPDATE wordlist
-##                    SET used = TRUE
-##                    WHERE id=%s
-##                    """,
-##                    (word_id,))
 
     # New more efficient way to mark all words as used at once.
     args_list = [(sql_response[0],) for sql_response in message_words_tuples]
