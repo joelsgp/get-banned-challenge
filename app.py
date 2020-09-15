@@ -16,6 +16,12 @@ DATABASE_URL = os.environ["DATABASE_URL"]
 # This is the enforced interval between providing new words.
 ##INTERVAL_HOURS = 6
 INTERVAL_HOURS = 0.005
+# This determines whether the app will tell the user the progress
+# through the words.
+# I think I'll keep it turned off at the start because it will be more
+# encouraging.
+# Right now it's turned on for testing.
+SHOW_INFO = True
 
 # Function to connect to default main SQL database.
 # Returns connection and cursor.
@@ -201,9 +207,18 @@ def hello_world():
               Last requested {} hours ago.
               Required interval is {} hours.
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
-        
+
+        # Get the actual message with the words.
         message = generate_message()
-        return "hello world {}<br>{}{}".format(request_ip, message, easter_egg)
+        # Choose whether to get the info on progress based on SHOW_INFO.
+        if SHOW_INFO:
+            info = ""
+        else:
+            info = ""
+        
+        return """
+               hello world {}{}<br>{}{}
+               """.format(request_ip, info, message, easter_egg)
 
 
 
