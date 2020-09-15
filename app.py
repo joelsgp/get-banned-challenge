@@ -162,6 +162,36 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
     # Here is your message!
     print("Logs: Here is your message!")
     return message
+
+
+# Function to get progress info for the user.
+# Returns a string containing the info.
+def get_info():
+    # The length of the wordlist, so we don't have to get it from the server.
+    len_wordlist = 69903
+    
+    # Connect to PostgreSQL database.
+    conn, cur = postgresql_connect()
+
+    # Get the number of used words in the wordlist from the server.
+    cur.execute("SELECT COUNT(*) FROM wordlist WHERE used=TRUE")
+    sql_response = cur.fetchone()
+    used_words = sql_response[0]
+
+    used_words_percent = round((used_words / len_wordlist) * 100, 2)
+
+    # Generate the info message.
+    info = """
+              Thanks to your help,
+              we've gone through {} out of {} words already.
+              That's {} percent (2d.p.)!
+              """.format(used_words, len_wordlist, used_words_percent)
+
+    # Close connection to the SQL server.
+    postgresql_disconnect(conn, cur)
+
+    # Return the info message.
+    return info
     
 
 
@@ -212,7 +242,7 @@ def hello_world():
         message = generate_message()
         # Choose whether to get the info on progress based on SHOW_INFO.
         if SHOW_INFO:
-            info = ""
+            info = "<br>" + get_info()
         else:
             info = ""
         

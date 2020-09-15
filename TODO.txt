@@ -8,7 +8,7 @@
 [/]add additional duplication checking using cookies?
 [*]Fix messages being too long
 [*]optimise for more speed (sql queries in generate_message mostly)
-[ ]add indicator of progress through wordlist on requests
+[*]add indicator of progress through wordlist on requests
 [*]fix issue with line 157
 [*]add favicon
 [ ]add jinja stuff for more efficient responses and more modern favicon support?
