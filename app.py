@@ -1,5 +1,6 @@
 import os
 import psycopg2
+import psycopg2.extras
 from time import time
 from flask import Flask, request
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -118,16 +119,28 @@ def generate_message(len_limit=2000, suffix=" Heap."):
         word_id = sql_response[0]
         word = sql_response[1]
 
+        message_words_tuples.append(sql_response)
         message_words.append(word)
         cum_length += len(word)+1
 
-        # Mark the word as used on the database.
-        cur.execute("""
-                    UPDATE wordlist
-                    SET used = TRUE
-                    WHERE id=%s
-                    """,
-                    (word_id,))
+##        # Mark the word as used on the database.
+##        cur.execute("""
+##                    UPDATE wordlist
+##                    SET used = TRUE
+##                    WHERE id=%s
+##                    """,
+##                    (word_id,))
+
+    # New more efficient way to mark all words as used at once.
+    args_list = [(sql_response[0],) for sql_response in message_words_tuples]
+    psycopg2.extras.execute_batch(cur,
+                                  """
+                                  UPDATE wordlist
+                                  SET used = TRUE
+                                  WHERE id=$s
+                                  """,
+                                  args_list)
+    
 
     # Commit the changes and close connection to the SQL server.
     conn.commit()
