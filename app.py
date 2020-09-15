@@ -102,8 +102,9 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     
     # This variable will track the cumultive length of each word chosen.
     cum_length = 0
-    # Declare a variable for the message words as an empty list.
+    # Declare a variables for the message words as an empty list.
     message_words = []
+    message_words_tuples = []
 
     # Keep adding words until you reach the discord char limit.
     print("Logs: Generating message.")
