@@ -96,13 +96,16 @@ def meets_interval_requirements(request_ip):
 
 # Function to generate the message of words to send to the user!
 # Returns the message as a string.
-def generate_message(len_limit=2000, suffix=" Heap."):
+def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
     # Connect to PostgreSQL database.
     conn, cur = postgresql_connect()
     
     # This variable will track the cumultive length of each word chosen.
     cum_length = 0
-    len_limit_actual = len_limit-len(suffix)
+    # The actual length limit will be the regular one minus the suffix length
+    # and the length of the longest word in the wordlist.
+    # I wrote get-wordlist-longest-words.py and discovered that is 29.
+    len_limit_actual = len_limit-len(suffix)-len_longest_word
     # Declare a variables for the message words as an empty list.
     message_words = []
     message_words_tuples = []
