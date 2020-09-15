@@ -34,7 +34,7 @@ cur.execute("""
 
 # Print 'em out.
 for sql_response in cur.fetchall():
-    word = sql_reponse[1]
+    word = sql_response[1]
     print("{} long: {}".format(len(word), word))
 
 
