@@ -218,7 +218,7 @@ def favicon():
 
 # This makes it so that request.remote_addr will
 # show the real ip and not localhost.
-app = ProxyFix(app)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == '__main__':
     app.run()
