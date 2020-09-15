@@ -5,8 +5,10 @@ from flask import Flask, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 
+
 # Create "app"
 app = Flask(__name__)
+
 
 
 DATABASE_URL = os.environ["DATABASE_URL"]
@@ -26,6 +28,7 @@ def postgresql_connect():
 def postgresql_disconnect(conn, cur):
     cur.close()
     conn.close()
+
 
 
 # Function to check if the requesting IP has not made a request within the
@@ -154,6 +157,8 @@ def hello_world():
 
     # check will be True if we are ok to send new words.
     check, request_interval_seconds = meets_interval_requirements(request_ip)
+    # Get the request interval in hours, or assign it as None
+    # if there was no prior request by this IP.
     if request_interval_seconds is not None:
         request_interval_hours = request_interval_seconds / (60**2)
     else:
@@ -184,6 +189,7 @@ def hello_world():
         
         message = generate_message()
         return "hello world {} {}{}".format(request_ip, message, easter_egg)
+
 
 
 # This makes it so that request.remote_addr will
