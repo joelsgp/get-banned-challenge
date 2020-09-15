@@ -10,5 +10,5 @@
 [*]optimise for more speed (sql queries in generate_message mostly)
 [ ]add indicator of progress through wordlist on requests
 [*]fix issue with line 157
-[ ]add favicon 
+[*]add favicon 
 [ ]test test test
