@@ -138,7 +138,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
                                   """
                                   UPDATE wordlist
                                   SET used = TRUE
-                                  WHERE id=$s
+                                  WHERE id=%s
                                   """,
                                   args_list)
     
