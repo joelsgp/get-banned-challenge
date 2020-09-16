@@ -258,6 +258,8 @@ def hello_world():
 
         # Get the actual message with the words.
         message = generate_message()
+        # Record the message to the database.
+        record_message(request_ip, message)
         # Choose whether to get the info on progress based on SHOW_INFO.
         if SHOW_INFO:
             info = "<br>" + get_info()
