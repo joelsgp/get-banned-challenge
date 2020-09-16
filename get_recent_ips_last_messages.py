@@ -1,4 +1,5 @@
 import psycopg2
+
 from jmcb_postgresql import postgresql_connect, postgresql_disconnect
 
 # Connect to database.

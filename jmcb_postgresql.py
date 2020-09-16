@@ -1,6 +1,7 @@
 import os
 import psycopg2
 
+
 # Function to connect to default main SQL database.
 # Returns connection and cursor.
 def postgresql_connect(database_url=os.environ["DATABASE_URL"]):
