@@ -30,7 +30,8 @@ SHOW_INFO = True
 # Function to check if the requesting IP has not made a request within the
 # time interval.
 # Returns a boolean that is true if the IP has not made a request within the
-# time interval, and the time since last request in seconds, which will
+# time interval. Also returns the time since last request in seconds,
+# and the last message the IP was served, both of which will
 # be None if no recent request had been made.
 def meets_interval_requirements(request_ip):
     # Get the enforced interval between providing new words in seconds.
@@ -41,13 +42,17 @@ def meets_interval_requirements(request_ip):
 
     
     # Check if IP is in the recent IPs from the database.
-    cur.execute("SELECT access_time FROM recent_ips WHERE ip=%s",
-                    (request_ip,))
+    cur.execute("""
+                SELECT access_time, last_message FROM recent_ips
+                WHERE ip = %s
+                """,
+                (request_ip,))
     sql_response = cur.fetchone()
     # If the SQL response is not None, it means the IP is there.
     if sql_response is not None:
-        # Get the last access time of the IP.
+        # Get the last access time and the last message of the IP.
         request_timestamp = sql_response[0]
+        last_message = sql_response[1]
         print("Logs: last request by this IP at {}".format(request_timestamp))
 
         # Calculate the time since last request.
@@ -64,15 +69,16 @@ def meets_interval_requirements(request_ip):
             # If the interval has passed, reset the timer for the IP.
             cur.execute("""
                         UPDATE recent_ips
-                        SET access_time=%s
-                        WHERE ip=%s
+                        SET access_time = %s
+                        WHERE ip = %s
                         """,
                         (time(), request_ip))
         
     else:
-        # The IP wasn't there so set the last request time to None for the
-        # return value.
+        # The IP wasn't there so set the last request time and the last
+        # message served to None for the return value.
         request_interval_seconds = None
+        last_message = None
         # If the IP has never visited before, add it to the database.
         cur.execute("""
                     INSERT INTO recent_ips(ip, access_time)
@@ -85,7 +91,7 @@ def meets_interval_requirements(request_ip):
     # First commit the changes and close connection to the SQL server.
     conn.commit()
     postgresql_disconnect(conn, cur)
-    return True, request_interval_seconds
+    return True, request_interval_seconds, last_message
 
 
 
@@ -108,7 +114,7 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
     #Fetch a number of random words from the server.
     cur.execute("""
                 SELECT id,word FROM wordlist
-                WHERE used=FALSE
+                WHERE used = FALSE
                 ORDER BY RANDOM()
                 LIMIT %s
                 """,
@@ -134,7 +140,7 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
                                   """
                                   UPDATE wordlist
                                   SET used = TRUE
-                                  WHERE id=%s
+                                  WHERE id = %s
                                   """,
                                   args_list)
     
@@ -153,6 +159,23 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
     return message
 
 
+# Function to write the last message served to an IP to the database.
+def record_message(request_ip, message):
+    # Connect to PostgreSQL database.
+    conn, cur = postgresql_connect()
+
+    cur.execute("""
+                UPDATE recent_ips
+                SET last_message = %s
+                WHERE ip = %s
+                """,
+                (message, request_ip))
+    
+    # Commit the changes and close connection to the SQL server.
+    conn.commit()
+    postgresql_disconnect(conn, cur)
+
+
 # Function to get progress info for the user.
 # Returns a string containing the info.
 def get_info():
@@ -163,7 +186,7 @@ def get_info():
     conn, cur = postgresql_connect()
 
     # Get the number of used words in the wordlist from the server.
-    cur.execute("SELECT COUNT(*) FROM wordlist WHERE used=TRUE")
+    cur.execute("SELECT COUNT(*) FROM wordlist WHERE used = TRUE")
     sql_response = cur.fetchone()
     used_words = sql_response[0]
 
@@ -198,7 +221,8 @@ def hello_world():
     request_ip = request.remote_addr
 
     # check will be True if we are ok to send new words.
-    check, request_interval_seconds = meets_interval_requirements(request_ip)
+    check, request_interval_seconds, last_message \
+           = meets_interval_requirements(request_ip)
     # Get the request interval in hours, or assign it as None
     # if there was no prior request by this IP.
     if request_interval_seconds is not None:
@@ -216,10 +240,13 @@ def hello_world():
         return """
                IP duplication error: {}, you already requested words
                {} hour(s) ago! Please ensure you wait at least
-               {} hours before requesting new words.{}
+               {} hours before requesting new words.
+               The last set of words you received is: <br>{}
+               {}
                """.format(request_ip,
                           request_interval_hours,
                           INTERVAL_HOURS,
+                          last_message
                           easter_egg)
 
     else:
