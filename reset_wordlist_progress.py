@@ -29,3 +29,6 @@ cur.execute("""
 # Commit and disconnect from server.
 conn.commit()
 postgresql_disconnect(conn, cur)
+
+# Don't close until enter is pressed.
+input()

@@ -22,3 +22,6 @@ for sql_response in cur.fetchall():
 
 # Disconnect from server.
 postgresql_disconnect(conn, cur)
+
+# Don't close until enter is pressed.
+input()
