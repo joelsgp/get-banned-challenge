@@ -48,6 +48,7 @@ def meets_interval_requirements(request_ip):
                 """,
                 (request_ip,))
     sql_response = cur.fetchone()
+    
     # If the SQL response is not None, it means the IP is there.
     if sql_response is not None:
         # Get the last access time and the last message of the IP.
@@ -119,6 +120,15 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
                 LIMIT %s
                 """,
                 (len_limit_actual/2,))
+
+
+    # If no words were left, return this.
+    if cur.fetchone() is None:
+        # Close connection to the SQL server.
+        postgresql_disconnect(conn, cur)
+
+        return "WHOA! All the words have been used up! Nice one!"
+
 
     # Keep adding words until you reach the discord char limit.
     print("Logs: Generating message.")

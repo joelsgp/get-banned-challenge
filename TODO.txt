@@ -12,7 +12,7 @@
 [*]fix issue with line 157
 [*]add favicon
 [ ]add jinja stuff for more efficient responses and more modern favicon support?
-[ ]add contingency for when all the words are used (if you want to be rigorous)
+[*]add contingency for when all the words are used (if you want to be rigorous)
 [*]add functionality to show the user the last words they were given, e.g. for if they refreshed by accident.
 [*]add script to get the most recently served messages, for when the word is found
 [*]refactor to stop duplicating the same connection code in each script
