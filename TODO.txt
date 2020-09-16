@@ -16,5 +16,6 @@
 [*]add functionality to show the user the last words they were given, e.g. for if they refreshed by accident.
 [*]add script to get the most recently served messages, for when the word is found
 [*]refactor to stop duplicating the same connection code in each script
+[ ]tell the user the human-readable time when they will next be able to make a successful request
 
 [ ]test test test

@@ -239,6 +239,7 @@ def hello_world():
     # if there was no prior request by this IP.
     if request_interval_seconds is not None:
         request_interval_hours = request_interval_seconds / (60**2)
+        request_interval_hours = round(request_interval_hours, 4)
     else:
         request_interval_hours = None
         
