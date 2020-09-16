@@ -63,7 +63,7 @@ def meets_interval_requirements(request_ip):
             # If the interval has not yet passed, return False.
             # First close the connection to the SQL server.
             postgresql_disconnect(conn, cur)
-            return False, request_interval_seconds
+            return False, request_interval_seconds, None
 
         else:
             # If the interval has passed, reset the timer for the IP.
