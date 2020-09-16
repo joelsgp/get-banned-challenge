@@ -159,6 +159,7 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
     return message
 
 
+
 # Function to write the last message served to an IP to the database.
 def record_message(request_ip, message):
     # Connect to PostgreSQL database.
@@ -207,6 +208,7 @@ def get_info():
     # Return the info message.
     return info
     
+
 
 
 # This is what runs when you go to the "homepage"
@@ -278,6 +280,7 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico',
                                mimetype='image/vnd.microsoft.icon')
+
 
 
 
