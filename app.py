@@ -1,9 +1,11 @@
 import os
 import psycopg2
 import psycopg2.extras
+
 from time import time
 from flask import Flask, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
+from jmcb_postgresql import postgresql_connect, postgresql_disconnect
 
 
 
@@ -22,19 +24,6 @@ INTERVAL_HOURS = 0.005
 # encouraging.
 # Right now it's turned on for testing.
 SHOW_INFO = True
-
-# Function to connect to default main SQL database.
-# Returns connection and cursor.
-def postgresql_connect():
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    cur = conn.cursor()
-    return conn, cur
-
-# Function to close the connection to the database.
-# Takes a connection and a cursor as arguments.
-def postgresql_disconnect(conn, cur):
-    cur.close()
-    conn.close()
 
 
 
