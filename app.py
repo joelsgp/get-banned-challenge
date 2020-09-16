@@ -16,8 +16,8 @@ app = Flask(__name__)
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 # This is the enforced interval between providing new words.
-##INTERVAL_HOURS = 6
-INTERVAL_HOURS = 0.005
+INTERVAL_HOURS = 6
+##INTERVAL_HOURS = 0.005
 # This determines whether the app will tell the user the progress
 # through the words.
 # I think I'll keep it turned off at the start because it will be more
