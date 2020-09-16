@@ -246,7 +246,7 @@ def hello_world():
                """.format(request_ip,
                           request_interval_hours,
                           INTERVAL_HOURS,
-                          last_message
+                          last_message,
                           easter_egg)
 
     else:
