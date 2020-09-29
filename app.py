@@ -87,7 +87,7 @@ def meets_interval_requirements(request_ip):
         if timezone is None:
             timezone = simple_geoip_get_timezone()
 
-            cur.execute("UPDATE recent_ips SET timezone = %s WHERE ip = %s".
+            cur.execute("UPDATE recent_ips SET timezone = %s WHERE ip = %s",
                         (timezone, request_ip))
         
         # Calculate the time since last request.
