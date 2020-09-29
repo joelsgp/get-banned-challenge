@@ -2,7 +2,7 @@ import os
 import psycopg2
 import psycopg2.extras
 
-from time import time
+from time import time, gmtime, strftime
 from flask import Flask, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_simple_geoip import SimpleGeoIP
@@ -48,6 +48,22 @@ def simple_geoip_get_timezone():
         timezone = geoip_data["location"]["timezone"]
 
     return timezone
+
+# Function to get the next time the user can request.
+# Takes the time until next request in seconds and the user's timezone
+# as a string format "+/-xx:00" as arguments.
+# Returns the next time the user can request as a string format "%H:%M"
+def str_next_request_available(request_interval_seconds, timezone):
+    # Calculate the timezone in seconds west of UTC
+    timezone_seconds = -(int(timezone[0:2]) * 60**2)
+    # Calculate the next request time in seconds for that timezone
+    request_interval_seconds_local = request_interval_seconds - timezone_seconds
+
+    # Format the time as a string
+    request_interval_struct_time = gmtime(request_interval_seconds_local)
+    request_interval_str = strftime("%H:%M", request_interval_struct_time)
+    return request_interval_str
+
 
 
 # Function to check if the requesting IP has not made a request within the
@@ -282,6 +298,9 @@ def hello_world():
         request_interval_hours = None
         
     if not check:
+        next_request_available = \
+            str_next_request_available(request_interval_seconds, timezone)
+        
         print("""
               Logs: {} - Unsuccessful request.
               Last requested {} hours ago.
@@ -290,12 +309,14 @@ def hello_world():
 
         return """
                IP duplication error: {}, you already requested words
-               {} hour(s) ago! Please ensure you wait at least
+               {} hour(s) ago! You can next request at {}.
+               Please ensure you wait at least
                {} hours before requesting new words.
                The last set of words you received is: <br>{}
                {}
                """.format(request_ip,
                           request_interval_hours,
+                          next_request_available
                           INTERVAL_HOURS,
                           last_message,
                           easter_egg)
