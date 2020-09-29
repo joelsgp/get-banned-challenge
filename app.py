@@ -5,17 +5,14 @@ import psycopg2.extras
 from time import time
 from flask import Flask, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_simple_geoip import SimpleGeoIP
 
 from jmcb_postgresql import postgresql_connect, postgresql_disconnect
 
 
 
-# Create "app"
-app = Flask(__name__)
-
-
-
 DATABASE_URL = os.environ["DATABASE_URL"]
+GEOIPIFY_API_KEY = os.environ["GEOIPIFY_API_KEY"]
 # This is the enforced interval between providing new words.
 ##INTERVAL_HOURS = 6
 INTERVAL_HOURS = 0.005
@@ -28,12 +25,26 @@ SHOW_INFO = True
 
 
 
+# Create "app"
+app = Flask(__name__)
+
+# This makes it so that request.remote_addr will
+# show the real ip and not localhost.
+app.wsgi_app = ProxyFix(app.wsgi_app)
+
+# Initialise the geoip extension.
+simple_geoip = SimpleGeoIP(app)
+
+
+
 # Function to check if the requesting IP has not made a request within the
 # time interval.
 # Returns a boolean that is true if the IP has not made a request within the
-# time interval. Also returns the time since last request in seconds,
+# time interval.
+# Also returns the time since last request in seconds,
 # and the last message the IP was served, both of which will
 # be None if no recent request had been made.
+# Also returns the timezone of the IP as a string format "+/-xx:00".
 def meets_interval_requirements(request_ip):
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
@@ -44,7 +55,7 @@ def meets_interval_requirements(request_ip):
     
     # Check if IP is in the recent IPs from the database.
     cur.execute("""
-                SELECT access_time, last_message FROM recent_ips
+                SELECT access_time, last_message, timezone FROM recent_ips
                 WHERE ip = %s
                 """,
                 (request_ip,))
@@ -52,10 +63,12 @@ def meets_interval_requirements(request_ip):
     
     # If the SQL response is not None, it means the IP is there.
     if sql_response is not None:
-        # Get the last access time and the last message of the IP.
+        # Get the last access time, last message, and timezone of the IP.
         request_timestamp = sql_response[0]
         last_message = sql_response[1]
+        timezone = sql_response[2]
         print("Logs: last request by this IP at {}".format(request_timestamp))
+
 
         # Calculate the time since last request.
         request_interval_seconds = time()-request_timestamp
@@ -65,7 +78,7 @@ def meets_interval_requirements(request_ip):
             # If the interval has not yet passed, return False.
             # First close the connection to the SQL server.
             postgresql_disconnect(conn, cur)
-            return False, request_interval_seconds, last_message
+            return False, request_interval_seconds, last_message, timezone
 
         else:
             # If the interval has passed, reset the timer for the IP.
@@ -81,19 +94,27 @@ def meets_interval_requirements(request_ip):
         # message served to None for the return value.
         request_interval_seconds = None
         last_message = None
-        # If the IP has never visited before, add it to the database.
+
+        # Get the timezone from the geoip extension.
+        geoip_data = simple_geip.get_geoip_data()
+        if geoip_data is None:
+            timezone = None
+        else:
+            timezone = geoip_data["location"]["timezone"]
+        
+        # The IP has never visited before, so add it to the database.
         cur.execute("""
-                    INSERT INTO recent_ips(ip, access_time)
-                    VALUES(%s, %s)
+                    INSERT INTO recent_ips(ip, access_time, timezone)
+                    VALUES(%s, %s, %s)
                     """,
-                    (request_ip, time()))
+                    (request_ip, time(), timezone))
 
     # If the function reaches this point then the interval has passed
     # or the IP has never made a request before. Return True.
     # First commit the changes and close connection to the SQL server.
     conn.commit()
     postgresql_disconnect(conn, cur)
-    return True, request_interval_seconds, last_message
+    return True, request_interval_seconds, last_message, timezone
 
 
 
@@ -206,12 +227,12 @@ def get_info():
 
     # Generate the info message.
     info = """
-              Thanks to your help,
-              we've gone through {} out of {} words already.
-              That's {} percent (2d.p.)! 
-              Note: this is testing and the progress is not real
-              and will be reset soon.
-              """.format(used_words, len_wordlist, used_words_percent)
+           Thanks to your help,
+           we've gone through {} out of {} words already.
+           That's {} percent (2d.p.)! 
+           Note: this is testing and the progress is not real
+           and will be reset soon.
+           """.format(used_words, len_wordlist, used_words_percent)
 
     # Close connection to the SQL server.
     postgresql_disconnect(conn, cur)
@@ -234,7 +255,7 @@ def hello_world():
     request_ip = request.remote_addr
 
     # check will be True if we are ok to send new words.
-    check, request_interval_seconds, last_message \
+    check, request_interval_seconds, last_message, timezone \
            = meets_interval_requirements(request_ip)
     # Get the request interval in hours, or assign it as None
     # if there was no prior request by this IP.
@@ -281,8 +302,8 @@ def hello_world():
             info = ""
         
         return """
-               hello world {}{}<br>{}{}
-               """.format(request_ip, info, message, easter_egg)
+               hello world {} timezone {}{}<br>{}{}
+               """.format(request_ip, timezone, info, message, easter_egg)
 
 
 
@@ -295,10 +316,6 @@ def favicon():
 
 
 
-
-# This makes it so that request.remote_addr will
-# show the real ip and not localhost.
-app.wsgi_app = ProxyFix(app.wsgi_app)
 
 if __name__ == '__main__':
     app.run()
