@@ -21,3 +21,8 @@
 [ ]refactor generate_message for slightly better message length efficiency
 
 [ ]test test test
+
+
+
+
+[ ]IDEA: client to automatically request words and send them on discord, with pyautogui?
