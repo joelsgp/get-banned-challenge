@@ -37,6 +37,19 @@ simple_geoip = SimpleGeoIP(app)
 
 
 
+# Function to get the timezone of the request ip within a flask app
+# using flask_simple_geoip.
+# Returns None if failed, or the timezone as a string.
+def simple_geoip_get_timezone():
+    geoip_data = simple_geoip.get_geoip_data()
+    if geoip_data is None:
+        timezone = None
+    else:
+        timezone = geoip_data["location"]["timezone"]
+
+    return timezone
+
+
 # Function to check if the requesting IP has not made a request within the
 # time interval.
 # Returns a boolean that is true if the IP has not made a request within the
@@ -70,6 +83,13 @@ def meets_interval_requirements(request_ip):
         print("Logs: last request by this IP at {}".format(request_timestamp))
 
 
+        # If the timezone recorded is None, try to get the timezone.
+        if timezone is None:
+            timezone = simple_geoip_get_timezone()
+
+            cur.execute("UPDATE recent_ips SET timezone = %s WHERE ip = %s".
+                        (timezone, request_ip))
+        
         # Calculate the time since last request.
         request_interval_seconds = time()-request_timestamp
         
@@ -96,11 +116,7 @@ def meets_interval_requirements(request_ip):
         last_message = None
 
         # Get the timezone from the geoip extension.
-        geoip_data = simple_geip.get_geoip_data()
-        if geoip_data is None:
-            timezone = None
-        else:
-            timezone = geoip_data["location"]["timezone"]
+        timezone = simple_geoip_get_timezone()
         
         # The IP has never visited before, so add it to the database.
         cur.execute("""
