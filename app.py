@@ -316,7 +316,7 @@ def hello_world():
                {}
                """.format(request_ip,
                           request_interval_hours,
-                          next_request_available
+                          next_request_available,
                           INTERVAL_HOURS,
                           last_message,
                           easter_egg)
