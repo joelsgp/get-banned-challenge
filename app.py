@@ -66,7 +66,7 @@ def str_next_request_available(request_interval_seconds, timezone):
 
     # Format the time as a string
     next_request_struct_time = gmtime(next_request_local)
-    next_request_str = strftime("%H:%M", request_interval_struct_time)
+    next_request_str = strftime("%H:%M", next_request_struct_time)
     # debug
     print(request_interval_seconds)
     print(timezone)
