@@ -54,6 +54,7 @@ def simple_geoip_get_timezone():
 # as a string format "+/-xx:00" as arguments.
 # Returns the next time the user can request as a string format "%H:%M"
 def str_next_request_available(request_interval_seconds, timezone):
+    print("Logs: This IP timezone {}".format(timezone))
     # Calculate the next time a request can be made in seconds
     next_request_seconds = time() + request_interval_seconds
     # Calculate the timezone in seconds west of UTC
@@ -67,13 +68,6 @@ def str_next_request_available(request_interval_seconds, timezone):
     # Format the time as a string
     next_request_struct_time = gmtime(next_request_local)
     next_request_str = strftime("%H:%M", next_request_struct_time)
-    # debug
-    print(request_interval_seconds)
-    print(timezone)
-    print(timezone_seconds)
-    print(next_request_local)
-    print(next_request_struct_time)
-    print(next_request_str)
     return next_request_str
 
 
@@ -324,7 +318,7 @@ def hello_world():
                {} hour(s) ago! You can next request at {}.
                Please ensure you wait at least
                {} hours before requesting new words.
-               The last set of words you received is: <br>{}
+               <br><br>The last set of words you received is: <br>{}
                {}
                """.format(request_ip,
                           request_interval_hours,
@@ -351,7 +345,7 @@ def hello_world():
             info = ""
         
         return """
-               hello world {} timezone {}{}<br>{}{}
+               hello world {} timezone {}{}<br><br>{}{}
                """.format(request_ip, timezone, info, message, easter_egg)
 
 
