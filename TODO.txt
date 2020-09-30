@@ -17,7 +17,7 @@
 [*]add script to get the most recently served messages, for when the word is found
 [*]refactor to stop duplicating the same connection code in each script
 [*]tell the user the human-readable time when they will next be able to make a successful request
-[ ]tell the user the timezone of the next time they can make a request 
+[*]tell the user the timezone of the next time they can make a request 
 [ ]add get-banned-challenge.herokuapp.com/undo for marking the most recently retrieved words as unused
 [*]refactor generate_message for slightly better message length efficiency
 

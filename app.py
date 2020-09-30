@@ -312,7 +312,7 @@ def hello_world():
 
         return """
                IP duplication error: {}, you already requested words
-               {} hour(s) ago! You can next request at {}.
+               {} hour(s) ago! You can next request at {} (UTC{}).
                Please ensure you wait at least
                {} hours before requesting new words.
                <br><br>The last set of words you received is: <br>{}
@@ -320,6 +320,7 @@ def hello_world():
                """.format(request_ip,
                           request_interval_hours,
                           next_request_available,
+                          timezone
                           INTERVAL_HOURS,
                           last_message,
                           easter_egg)
