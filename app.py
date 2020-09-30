@@ -158,16 +158,14 @@ def meets_interval_requirements(request_ip):
 
 # Function to generate the message of words to send to the user!
 # Returns the message as a string.
-def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
+def generate_message(len_limit=2000, suffix=" Heap."):
     # Connect to PostgreSQL database.
     conn, cur = postgresql_connect()
     
     # This variable will track the cumultive length of each word chosen.
     cum_length = 0
-    # The actual length limit will be the regular one minus the suffix length
-    # and the length of the longest word in the wordlist.
-    # I wrote get-wordlist-longest-words.py and discovered that is 29.
-    len_limit_actual = len_limit-len(suffix)-len_longest_word
+    # The actual length limit will be the regular one minus the suffix length.
+    len_limit_actual = len_limit-len(suffix)
     # Declare a variables for the message words as an empty list.
     message_words = []
     message_words_tuples = []
@@ -190,18 +188,17 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
         return "WHOA! All the words have been used up! Nice one!"
 
 
-    # Keep adding words until you reach the discord char limit.
+    # Keep adding words until you reach the message char limit.
     print("Logs: Generating message.")
     while cum_length < len_limit_actual:
-
         
         sql_response = cur.fetchone()
-        word_id = sql_response[0]
         word = sql_response[1]
 
         message_words_tuples.append(sql_response)
-        message_words.append(word)
         cum_length += len(word)+1
+    # The list is now one word too long. Remove the last word in the list.
+    del message_words_tupes[-1]
 
 
     # New more efficient way to mark all words as used at once.
@@ -220,7 +217,7 @@ def generate_message(len_limit=2000, len_longest_word=29, suffix=" Heap."):
     postgresql_disconnect(conn, cur)
     
     # Join and return the message.
-    message = " ".join(message_words)
+    message = " ".join(word_tuple[1] for word_tuple in message_words_tuples)
     message += suffix
     print("Logs: Generated message with length {}.".format(len(message)))
 
