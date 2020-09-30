@@ -71,10 +71,10 @@ def str_next_request_available(request_interval_seconds, timezone):
     print(request_interval_seconds)
     print(timezone)
     print(timezone_seconds)
-    print(request_interval_seconds_local)
-    print(request_interval_struct_time)
-    print(request_interval_str)
-    return request_interval_str
+    print(next_request_local)
+    print(next_request_struct_time)
+    print(next_request_str)
+    return next_request_str
 
 
 
