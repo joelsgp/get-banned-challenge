@@ -198,7 +198,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
         message_words_tuples.append(sql_response)
         cum_length += len(word)+1
     # The list is now one word too long. Remove the last word in the list.
-    del message_words_tupes[-1]
+    del message_words_tuples[-1]
 
 
     # New more efficient way to mark all words as used at once.
