@@ -55,7 +55,7 @@ def simple_geoip_get_timezone():
 # Returns the next time the user can request as a string format "%H:%M"
 def str_next_request_available(request_interval_seconds, timezone):
     # Calculate the timezone in seconds west of UTC
-    if timezone[2] = "0":
+    if timezone[1] == "0":
         timezone_seconds = -(int(timezone[0:3:2]) * 60**2)
     else:
         timezone_seconds = -(int(timezone[0:3]) * 60**2)
