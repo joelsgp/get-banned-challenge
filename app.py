@@ -408,6 +408,16 @@ def undo_message():
         else:
             # Mark all words from the last message as unused.
             mark_words(last_message_words_lists, used=False)
+            # Update database to allow new words to be requested immediately
+            # and to mark the last message as undone.
+            cur.execute("""
+                        UPDATE recent_ips
+                        SET access_time = %s,
+                        last_message="You undid the last message!"
+                        lastm_tuples=[]
+                        WHERE ip = %s
+                        """,
+                        (time()-(INTERVAL_HOURS*60**2), request_ip))
 
             return """
                    You successfully undid the last message!<br><br>
