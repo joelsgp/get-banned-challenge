@@ -362,7 +362,7 @@ def hello_world():
         record_message(request_ip, message, message_words_tuples)
         # Choose whether to get the info on progress based on SHOW_INFO.
         if SHOW_INFO:
-            info = "<br>" + get_info()
+            info = get_info()
         else:
             info = ""
 
