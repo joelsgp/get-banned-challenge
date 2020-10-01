@@ -22,6 +22,9 @@
 [*]refactor generate_message for slightly better message length efficiency
 
 [ ]test test test
+[ ]add docstrings and clean up comments
+[ ]separate app.py into different modules/files for tidier code
+[ ]separate existing functions into smaller functions for tidier code?
 
 
 

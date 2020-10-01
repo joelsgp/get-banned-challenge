@@ -1,4 +1,5 @@
 import os
+import json
 import psycopg2
 import psycopg2.extras
 
@@ -155,9 +156,28 @@ def meets_interval_requirements(request_ip):
     return True, request_interval_seconds, last_message, timezone
 
 
+# Function to mark words in the database as used or unused.
+# Defaults to used.
+def mark_words(message_words_tuples, used=True):
+    # Get the sql argument for whether the words are used.
+    if used:
+        used_sql = "TRUE"
+    else:
+        used_sql = "FALSE"
+    
+    # New more efficient way to mark all words as used at once.
+    args_list = \
+        [(used_sql, sql_response[0]) for sql_response in message_words_tuples]
+    psycopg2.extras.execute_batch(cur,
+                                  """
+                                  UPDATE wordlist
+                                  SET used = %s
+                                  WHERE id = %s
+                                  """,
+                                  args_list)
 
 # Function to generate the message of words to send to the user!
-# Returns the message as a string.
+# Returns the message as a string, and the list of (ID, word) tuples.
 def generate_message(len_limit=2000, suffix=" Heap."):
     # Connect to PostgreSQL database.
     conn, cur = postgresql_connect()
@@ -185,7 +205,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
         # Close connection to the SQL server.
         postgresql_disconnect(conn, cur)
 
-        return "WHOA! All the words have been used up! Nice one!"
+        return "WHOA! All the words have been used up! Nice one!", []
 
 
     # Keep adding words until you reach the message char limit.
@@ -200,16 +220,8 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     # The list is now one word too long. Remove the last word in the list.
     del message_words_tuples[-1]
 
-
-    # New more efficient way to mark all words as used at once.
-    args_list = [(sql_response[0],) for sql_response in message_words_tuples]
-    psycopg2.extras.execute_batch(cur,
-                                  """
-                                  UPDATE wordlist
-                                  SET used = TRUE
-                                  WHERE id = %s
-                                  """,
-                                  args_list)
+    # Mark all the words as used.
+    mark_words(message_words_tuples)
     
 
     # Commit the changes and close connection to the SQL server.
@@ -220,24 +232,23 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     message = " ".join(word_tuple[1] for word_tuple in message_words_tuples)
     message += suffix
     print("Logs: Generated message with length {}.".format(len(message)))
-
     # Here is your message!
     print("Logs: Here is your message!")
-    return message
+    return message, message_words_tuples
 
 
 
 # Function to write the last message served to an IP to the database.
-def record_message(request_ip, message):
+def record_message(request_ip, message, message_words_tuples):
     # Connect to PostgreSQL database.
     conn, cur = postgresql_connect()
 
     cur.execute("""
                 UPDATE recent_ips
-                SET last_message = %s
+                SET last_message = %s, lastm_tuples = %s
                 WHERE ip = %s
                 """,
-                (message, request_ip))
+                (message, json.dumps(message_words_tuples), request_ip))
     
     # Commit the changes and close connection to the SQL server.
     conn.commit()
@@ -333,9 +344,9 @@ def hello_world():
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
 
         # Get the actual message with the words.
-        message = generate_message()
+        message, message_words_tuples = generate_message()
         # Record the message to the database.
-        record_message(request_ip, message)
+        record_message(request_ip, message, message_words_tuples)
         # Choose whether to get the info on progress based on SHOW_INFO.
         if SHOW_INFO:
             info = "<br>" + get_info()
@@ -349,7 +360,7 @@ def hello_world():
 
 
 # This serves a favicon to the browser
-@app.route('/favicon.ico')
+@app.route("/favicon.ico")
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico',
@@ -358,5 +369,5 @@ def favicon():
 
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
