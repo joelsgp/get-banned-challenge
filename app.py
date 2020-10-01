@@ -393,10 +393,10 @@ def undo_message():
     # If the SQL response is not None, it means the IP is there.
     if sql_response:
         last_message = sql_response[0]
-        message_words_tuples = json.loads(sql_response[1])
+        last_message_words_lists = sql_response[1]
 
         # If the list is empty it means the last message was already undone.
-        if not message_words_tuples:
+        if not last_message_words_lists:
             return """
                    It seems you already undid your last requested words!<br>
                    "How can you undo what you have already undone?
@@ -407,7 +407,7 @@ def undo_message():
                    """
         else:
             # Mark all words from the last message as unused.
-            mark_words(message_words_tuples, used=False)
+            mark_words(last_message_words_lists, used=False)
 
             return """
                    You successfully undid the last message!<br><br>
