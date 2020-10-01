@@ -334,6 +334,14 @@ def hello_world():
               Required interval is {} hours.
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
 
+        # Get Jinja html template, fill and serve.
+        html_template = jinja_env.get_template("index_fail.html")
+        return html_template.render(request_ip=request_ip,
+                                    last_interval=request_interval_hours,
+                                    next_available=next_request_available,
+                                    timezone=timezone,
+                                    interval_hours=INTERVAL_HOURS,
+                                    last_message=last_message)
         return """
                IP duplication error: {}, you already requested words
                {} hour(s) ago! You can next request at {} (UTC{}).
@@ -366,23 +374,16 @@ def hello_world():
         else:
             info = ""
 
-        template = jinja_env.get_template("index_success.html")
-        return template.render(request_ip=request_ip, timezone=timezone,
-                               info=info, message=message)
-##        return """
-##               hello world {} timezone UTC{}{}<br><br>{}{}
-##               """.format(request_ip, timezone, info, message, easter_egg)
+        # Get Jinja html template, fill and serve.
+        html_template = jinja_env.get_template("index_success.html")
+        return html_template.render(request_ip=request_ip, timezone=timezone,
+                                    info=info, message=message)
+
 
 # When you go to this page, the app will attempt to undo the last message
 # you requested by marking those words as unused on the database.
 @app.route("/undo")
 def undo_message():
-    # PSEUDOCODE - TEMP
-    # Check if the user has a recent message
-    # If not, tell them
-    # Else if the recent message was undone, tell them
-    # Else, mark all the words in the recent message as unused
-
     # Get IP for finding its last message, if any.
     request_ip = request.remote_addr
     

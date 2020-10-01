@@ -5,12 +5,13 @@
     <title>:( Gameboy Colour</title>
 </head>
 <body>
-	IP duplication error: {{ request_ip }}, you already requested words
-   {} hour(s) ago! You can next request at {} (UTC{}).
-   Please ensure you wait at least
-   {} hours before requesting new words.
-   <br><br>The last set of words you received is: <br>{}
-   {}
+	IP duplication error: {{ request_ip }}, you already requested words {{ last_interval }}} hour(s) ago! You can next request at {{ next_available }} (UTC{{ timezone }}).
+    Please ensure you wait at least {{ interval_hours }} hours before requesting new words.
+    <br>
+    <br>
+    The last set of words you received is:
+    <br>
+    {{ last_message }}
 	<!--there is no frontend,take off your clothes,bottom text-->
 </body>
 </html>
