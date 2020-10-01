@@ -1,25 +1,27 @@
 [*] = done
 [/] = skipped
 
-[*]fix issues recorded on github
-[*]add code to generate words
-[*]finish filling sql wordlist
-[*]fix wrong ip address being got
-[/]add additional duplication checking using cookies?
-[*]Fix messages being too long
-[*]optimise for more speed (sql queries in generate_message mostly)
-[*]add indicator of progress through wordlist on requests
-[*]fix issue with line 157
-[*]add favicon
+        [*]fix issues recorded on github
+        [*]add code to generate words
+        [*]finish filling sql wordlist
+        [*]fix wrong ip address being got
+    [/]add additional duplication checking using cookies?
+        [*]Fix messages being too long
+        [*]optimise for more speed (sql queries in generate_message mostly)
+        [*]add indicator of progress through wordlist on requests
+        [*]fix issue with line 157
+        [*]add favicon
 [ ]add jinja stuff for more efficient responses and more modern favicon support?
-[*]add contingency for when all the words are used (if you want to be rigorous)
-[*]add functionality to show the user the last words they were given, e.g. for if they refreshed by accident.
-[*]add script to get the most recently served messages, for when the word is found
-[*]refactor to stop duplicating the same connection code in each script
-[*]tell the user the human-readable time when they will next be able to make a successful request
-[*]tell the user the timezone of the next time they can make a request 
+        [*]add contingency for when all the words are used (if you want to be rigorous)
+        [*]add functionality to show the user the last words they were given, e.g. for if they refreshed by accident.
+        [*]add script to get the most recently served messages, for when the word is found
+        [*]refactor to stop duplicating the same connection code in each script
+        [*]tell the user the human-readable time when they will next be able to make a successful request
+        [*]tell the user the timezone of the next time they can make a request 
 [ ]add get-banned-challenge.herokuapp.com/undo for marking the most recently retrieved words as unused
-[*]refactor generate_message for slightly better message length efficiency
+        [*]refactor generate_message for slightly better message length efficiency
+[ ]add "copy to clipboard" button
+[ ]refactor to only connect to SQL database once for one request?
 
 [ ]test test test
 [ ]add docstrings and clean up comments

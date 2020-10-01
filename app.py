@@ -159,6 +159,9 @@ def meets_interval_requirements(request_ip):
 # Function to mark words in the database as used or unused.
 # Defaults to used.
 def mark_words(message_words_tuples, used=True):
+    # Connect to PostgreSQL database
+    conn, cur = postgresql_connect()
+    
     # Get the sql argument for whether the words are used.
     if used:
         used_sql = "TRUE"
@@ -175,6 +178,10 @@ def mark_words(message_words_tuples, used=True):
                                   WHERE id = %s
                                   """,
                                   args_list)
+    
+    # Commit the changes and close connection to the SQL server.
+    conn.commit()
+    postgresql_disconnect(conn, cur)
 
 # Function to generate the message of words to send to the user!
 # Returns the message as a string, and the list of (ID, word) tuples.
@@ -356,6 +363,12 @@ def hello_world():
         return """
                hello world {} timezone {}{}<br><br>{}{}
                """.format(request_ip, timezone, info, message, easter_egg)
+
+# When you go to this page, the app will attempt to undo the last message
+# you requested by marking those words as unused on the database.
+@app.route("/undo):
+def undo_message():
+    pass
 
 
 
