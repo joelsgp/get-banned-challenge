@@ -39,7 +39,7 @@ simple_geoip = SimpleGeoIP(app)
 
 # Configure Jinja environment.
 jinja_env = Environment(loader=PackageLoader("app", "templates"),
-                  autoescape=select_autoescape(["html", "xml"])
+                        autoescape=select_autoescape(["html", "xml"]))
 
 
 
