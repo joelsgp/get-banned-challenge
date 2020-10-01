@@ -422,8 +422,8 @@ def undo_message():
             # and to mark the last message as undone.
             cur.execute("""
                         UPDATE recent_ips
-                        SET access_time = %s,
-                        last_message="You undid the last message!",
+                        SET access_time = %s,\
+                        last_message="You undid the last message!",\
                         lastm_tuples=%s
                         WHERE ip = %s
                         """,
