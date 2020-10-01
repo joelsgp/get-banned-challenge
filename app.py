@@ -6,6 +6,7 @@ import psycopg2.extras
 from time import time, gmtime, strftime
 from flask import Flask, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
+from jinja2 import Environment, PackageLoader, select_autoescape
 from flask_simple_geoip import SimpleGeoIP
 
 from jmcb_postgresql import postgresql_connect, postgresql_disconnect
@@ -35,6 +36,11 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # Initialise the geoip extension.
 simple_geoip = SimpleGeoIP(app)
+
+# Configure Jinja environment.
+jinja_env = Environment(loader=PackageLoader("app", "templates"),
+                  autoescape=select_autoescape(["html", "xml"])
+
 
 
 
@@ -359,10 +365,13 @@ def hello_world():
             info = "<br>" + get_info()
         else:
             info = ""
-        
-        return """
-               hello world {} timezone UTC{}{}<br><br>{}{}
-               """.format(request_ip, timezone, info, message, easter_egg)
+
+        template = jinja_env.get_template("index_success.html")
+        return template.render(request_ip=request_ip, timezone=timezone,
+                               info=info, message=message)
+##        return """
+##               hello world {} timezone UTC{}{}<br><br>{}{}
+##               """.format(request_ip, timezone, info, message, easter_egg)
 
 # When you go to this page, the app will attempt to undo the last message
 # you requested by marking those words as unused on the database.
