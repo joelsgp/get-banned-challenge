@@ -413,11 +413,13 @@ def undo_message():
             cur.execute("""
                         UPDATE recent_ips
                         SET access_time = %s,
-                        last_message="You undid the last message!"
-                        lastm_tuples=[]
+                        last_message="You undid the last message!",
+                        lastm_tuples=%s
                         WHERE ip = %s
                         """,
-                        (time()-(INTERVAL_HOURS*60**2), request_ip))
+                        (time()-(INTERVAL_HOURS*60**2),
+                         json.dumps([])
+                         request_ip))
 
             return """
                    You successfully undid the last message!<br><br>
