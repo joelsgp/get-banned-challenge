@@ -427,7 +427,7 @@ def undo_message():
                         WHERE ip = %s
                         """,
                         (time()-(INTERVAL_HOURS*60**2),
-                         json.dumps([])
+                         json.dumps([]),
                          request_ip))
 
             return """
