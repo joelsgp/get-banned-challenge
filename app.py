@@ -85,7 +85,7 @@ def meets_interval_requirements(request_ip):
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
 
-    # Connect to PostgreSQL database
+    # Connect to PostgreSQL database.
     conn, cur = postgresql_connect()
 
     
@@ -98,7 +98,7 @@ def meets_interval_requirements(request_ip):
     sql_response = cur.fetchone()
     
     # If the SQL response is not None, it means the IP is there.
-    if sql_response is not None:
+    if sql_response:
         # Get the last access time, last message, and timezone of the IP.
         request_timestamp = sql_response[0]
         last_message = sql_response[1]
@@ -107,7 +107,7 @@ def meets_interval_requirements(request_ip):
 
 
         # If the timezone recorded is None, try to get the timezone.
-        if timezone is None:
+        if not timezone:
             timezone = simple_geoip_get_timezone()
 
             cur.execute("UPDATE recent_ips SET timezone = %s WHERE ip = %s",
@@ -361,16 +361,72 @@ def hello_world():
             info = ""
         
         return """
-               hello world {} timezone {}{}<br><br>{}{}
+               hello world {} timezone UTC{}{}<br><br>{}{}
                """.format(request_ip, timezone, info, message, easter_egg)
 
 # When you go to this page, the app will attempt to undo the last message
 # you requested by marking those words as unused on the database.
 @app.route("/undo")
 def undo_message():
+    # PSEUDOCODE - TEMP
     # Check if the user has a recent message
     # If not, tell them
-    # Else if the recent message
+    # Else if the recent message was undone, tell them
+    # Else, mark all the words in the recent message as unused
+
+    # Get IP for finding its last message, if any.
+    request_ip = request.remote_addr
+    
+    # Connect to PostgreSQL database.
+    conn, cur = postgresql_connect()
+
+    # A little reused code from meets_interval_requirements here,
+    # could I improve that?
+    # Check if IP is in the recent IPs from the database.
+    cur.execute("""
+                SELECT message, lastm_tuples FROM recent_ips
+                WHERE ip = %s
+                """,
+                (request_ip,))
+    sql_response = cur.fetchone()
+    
+    # If the SQL response is not None, it means the IP is there.
+    if sql_response:
+        message = sql_response[0]
+        message_words_tuples = json.loads(sql_response[1])
+
+        # If the list is empty it means the last message was already undone.
+        if not message_words_tuples:
+            return """
+                   It seems you already undid your last requested words!<br>
+                   "How can you undo what you have already undone?
+                   Well, if this was like word or something you could undo
+                   the last action before the one that you just undid
+                   but this app doesn't work like that."
+                    -Tzun Two or summin
+                   """
+        else:
+            # Mark all words from the last message as unused.
+            mark_words(message_words_tuples, used=False)
+
+            return """
+                   You successfully undid the last message!<br><br>
+                   Your last message was:<br>
+                   {}
+                   """.format(message)
+
+    else:
+        return """
+               You do not have any recently requested words!<br>
+               "How can you undo what you have not done?"
+                -Tzun Two or summin
+               """
+
+
+    # Commit the changes and close connection to the SQL server.
+    conn.commit()
+    postgresql_disconnect(conn, cur)
+
     return "hello world"
 
 
