@@ -366,9 +366,12 @@ def hello_world():
 
 # When you go to this page, the app will attempt to undo the last message
 # you requested by marking those words as unused on the database.
-@app.route("/undo"):
+@app.route("/undo")
 def undo_message():
-    pass
+    # Check if the user has a recent message
+    # If not, tell them
+    # Else if the recent message
+    return "hello world"
 
 
 
