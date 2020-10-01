@@ -23,12 +23,10 @@
 [ ]add "copy to clipboard" button
 [ ]refactor to only connect to SQL database once for one request?
 [ ]finish making all pages (remaining: /undo) into Jinja templates
+-------
 [ ]test test test
 [ ]add docstrings and clean up comments
 [ ]separate app.py into different modules/files for tidier code
 [ ]separate existing functions into smaller functions for tidier code?
-
-
-
-
+-------
 [ ]IDEA: client to automatically request words and send them on discord, with pyautogui?
