@@ -10,6 +10,18 @@
   {{ info }}
   <br>
   <br>
+
+  <script type="text/javascript">
+    function copyMessage() {
+      var copyText = document.getElementById("message");
+      copyText.select();
+      copyText.setSelectionRange(0, 2000);
+      document.execCommand("copy");
+      alert("Copied the message!");
+    }
+  </script>
+
+  <button onclick="copyMessage()">Copy the message</button>>
   <div id="message">{{ message }}</div>
   <!--there is no frontend,take off your clothes,bottom text-->
 </body>
