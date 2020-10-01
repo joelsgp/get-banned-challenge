@@ -384,7 +384,7 @@ def undo_message():
     # could I improve that?
     # Check if IP is in the recent IPs from the database.
     cur.execute("""
-                SELECT message, lastm_tuples FROM recent_ips
+                SELECT last_message, lastm_tuples FROM recent_ips
                 WHERE ip = %s
                 """,
                 (request_ip,))
@@ -392,7 +392,7 @@ def undo_message():
     
     # If the SQL response is not None, it means the IP is there.
     if sql_response:
-        message = sql_response[0]
+        last_message = sql_response[0]
         message_words_tuples = json.loads(sql_response[1])
 
         # If the list is empty it means the last message was already undone.
@@ -413,7 +413,7 @@ def undo_message():
                    You successfully undid the last message!<br><br>
                    Your last message was:<br>
                    {}
-                   """.format(message)
+                   """.format(last_message)
 
     else:
         return """
