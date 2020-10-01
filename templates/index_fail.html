@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<link rel='icon' href='favicon.ico' type='image/x-icon'/>
+  <link rel='icon' href='favicon.ico' type='image/x-icon'/>
     <title>:( Gameboy Colour</title>
 </head>
 <body>
-	IP duplication error: {{ request_ip }}, you already requested words {{ last_interval }}} hour(s) ago! You can next request at {{ next_available }} (UTC{{ timezone }}).
+  IP duplication error: {{ request_ip }}, you already requested words {{ last_interval }}} hour(s) ago! You can next request at {{ next_available }} (UTC{{ timezone }}).
     Please ensure you wait at least {{ interval_hours }} hours before requesting new words.
     <br>
     <br>
     The last set of words you received is:
     <br>
-    {{ last_message }}
-	<!--there is no frontend,take off your clothes,bottom text-->
+    <div id="last_message">{{ last_message }}</div>
+  <!--there is no frontend,take off your clothes,bottom text-->
 </body>
 </html>
