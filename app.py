@@ -343,20 +343,6 @@ def hello_world():
                                     timezone=timezone,
                                     interval_hours=INTERVAL_HOURS,
                                     last_message=last_message)
-        return """
-               IP duplication error: {}, you already requested words
-               {} hour(s) ago! You can next request at {} (UTC{}).
-               Please ensure you wait at least
-               {} hours before requesting new words.
-               <br><br>The last set of words you received is: <br>{}
-               {}
-               """.format(request_ip,
-                          request_interval_hours,
-                          next_request_available,
-                          timezone,
-                          INTERVAL_HOURS,
-                          last_message,
-                          easter_egg)
 
     else:
         print("""
@@ -410,14 +396,10 @@ def undo_message():
         if not last_message_words_lists:
             # Close connection to the SQL server.
             postgresql_disconnect(conn, cur)
-            return """
-                   It seems you already undid your last requested words!<br>
-                   "How can you undo what you have already undone?
-                   Well, if this was like word or something you could undo
-                   the last action before the one that you just undid
-                   but this app doesn't work like that."
-                    -Tzun Two or summin
-                   """
+            # Get Jinja html template and serve.
+            html_template = jinja_env.get_template("undo_already.html")
+            return html_template.render()
+                                    
         else:
             # Mark all words from the last message as unused.
             mark_words(last_message_words_lists, used=False)
@@ -437,20 +419,16 @@ def undo_message():
             # Commit the changes and close connection to the SQL server.
             conn.commit()
             postgresql_disconnect(conn, cur)
-            return """
-                   You successfully undid the last message!<br><br>
-                   Your last message was:<br>
-                   {}
-                   """.format(last_message)
+            # Get Jinja html template, fill and serve.
+            html_template = jinja_env.get_template("undo_success.html")
+            return html_template.render(last_message=last_message)
 
     else:
         # Close connection to the SQL server.
         postgresql_disconnect(conn, cur)
-        return """
-               You do not have any recently requested words!<br>
-               "How can you undo what you have not done?"
-                -Tzun Two or summin
-               """
+        # Get Jinja html template and serve.
+        html_template = jinja_env.get_template("undo_none.html")
+        return html_template.render()
 
 
 
