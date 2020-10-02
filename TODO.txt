@@ -25,6 +25,14 @@
         [*]finish making all pages (remaining: /undo) into Jinja templates
 [ ]prettify
 -------
+migrating sql server
+[ ]provision addon
+[ ]set up env variables
+[ ]install mysql workbench
+[ ]migrate wordlist table
+[ ]write new sql connect module
+[ ]push to production!
+-------
 [ ]test test test
 [ ]add docstrings and clean up comments
 [ ]separate app.py into different modules/files for tidier code
