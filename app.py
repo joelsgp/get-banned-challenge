@@ -408,6 +408,8 @@ def undo_message():
 
         # If the list is empty it means the last message was already undone.
         if not last_message_words_lists:
+            # Close connection to the SQL server.
+            postgresql_disconnect(conn, cur)
             return """
                    It seems you already undid your last requested words!<br>
                    "How can you undo what you have already undone?
@@ -432,6 +434,9 @@ def undo_message():
                          json.dumps([]),
                          request_ip))
 
+            # Commit the changes and close connection to the SQL server.
+            conn.commit()
+            postgresql_disconnect(conn, cur)
             return """
                    You successfully undid the last message!<br><br>
                    Your last message was:<br>
@@ -439,18 +444,13 @@ def undo_message():
                    """.format(last_message)
 
     else:
+        # Close connection to the SQL server.
+        postgresql_disconnect(conn, cur)
         return """
                You do not have any recently requested words!<br>
                "How can you undo what you have not done?"
                 -Tzun Two or summin
                """
-
-
-    # Commit the changes and close connection to the SQL server.
-    conn.commit()
-    postgresql_disconnect(conn, cur)
-
-    return "hello world"
 
 
 
