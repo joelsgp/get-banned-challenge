@@ -396,6 +396,7 @@ def undo_message():
         if not last_message_words_lists:
             # Close connection to the SQL server.
             postgresql_disconnect(conn, cur)
+            
             # Get Jinja html template and serve.
             html_template = jinja_env.get_template("undo_already.html")
             return html_template.render()
@@ -419,6 +420,7 @@ def undo_message():
             # Commit the changes and close connection to the SQL server.
             conn.commit()
             postgresql_disconnect(conn, cur)
+            
             # Get Jinja html template, fill and serve.
             html_template = jinja_env.get_template("undo_success.html")
             return html_template.render(last_message=last_message)
@@ -426,6 +428,7 @@ def undo_message():
     else:
         # Close connection to the SQL server.
         postgresql_disconnect(conn, cur)
+        
         # Get Jinja html template and serve.
         html_template = jinja_env.get_template("undo_none.html")
         return html_template.render()
