@@ -38,6 +38,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 simple_geoip = SimpleGeoIP(app)
 
 # Configure Jinja environment.
+# jinja ninja
 jinja_env = Environment(loader=PackageLoader("app", "templates"),
                         autoescape=select_autoescape(["html", "xml"]))
 
