@@ -26,10 +26,10 @@
 [ ]prettify
 -------
 migrating sql server
-[ ]provision addon
+[*]provision addon
 [ ]set up env variables
-[ ]install mysql workbench
-[ ]migrate wordlist table
+[*]install mysql workbench
+[*]migrate wordlist table
 [ ]write new sql connect module
 [ ]push to production!
 -------
