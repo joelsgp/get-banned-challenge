@@ -179,6 +179,8 @@ def mark_words(message_words_tuples, used=True):
     # New more efficient way to mark all words as used at once.
     args_list = \
         [(used_sql, sql_response[0]) for sql_response in message_words_tuples]
+    print(message_words_tuples)
+    print(args_list)
     cur.executemany("""
                     UPDATE wordlist
                     SET used = %s
