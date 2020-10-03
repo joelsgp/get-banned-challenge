@@ -31,7 +31,7 @@ migrating sql server
 [*]install mysql workbench
 [*]migrate wordlist table
 [*]write new sql connect module
-[ ]push to production!
+[*]push to production!
 -------
 [ ]test test test
 [ ]add docstrings and clean up comments
