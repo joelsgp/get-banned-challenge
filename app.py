@@ -181,7 +181,7 @@ def mark_words(message_words_tuples, used=True):
     # into which they will be substituted.
     args_list = [sql_response[0] for sql_response in message_words_tuples]
     args_list = [used_sql] + args_list
-    args_template_str = "%s,"*(len(args_list)-1) + "%s"
+    args_template_str = "%s,"*(len(sql_response)-1) + "%s"
     # Execute the update on the SQL server as a single query.
     cur.execute("""
                     UPDATE wordlist
