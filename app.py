@@ -179,13 +179,12 @@ def mark_words(message_words_tuples, used=True):
     # New more efficient way to mark all words as used at once.
     args_list = \
         [(used_sql, sql_response[0]) for sql_response in message_words_tuples]
-    psycopg2.extras.execute_batch(cur,
-                                  """
-                                  UPDATE wordlist
-                                  SET used = %s
-                                  WHERE id = %s
-                                  """,
-                                  args_list)
+    cur.executemany("""
+                    UPDATE wordlist
+                    SET used = %s
+                    WHERE id = %s
+                    """,
+                    args_list)
     
     # Commit the changes and close connection to the SQL server.
     conn.commit()
