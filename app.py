@@ -185,8 +185,10 @@ def mark_words(message_words_tuples, used=True):
                     WHERE id = %s
                     """,
                     args_list)
+    print("marked words as used")
     
     # Commit the changes and close connection to the SQL server.
+    print("committed to sql server")
     conn.commit()
     mysql_disconnect(conn, cur)
 
@@ -235,6 +237,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     del message_words_tuples[-1]
 
     # Mark all the words as used.
+    print("marking words as used")
     mark_words(message_words_tuples)
     
 
