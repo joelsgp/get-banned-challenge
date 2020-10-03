@@ -209,7 +209,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     cur.execute("""
                 SELECT id,word FROM wordlist
                 WHERE used = FALSE
-                ORDER BY RANDOM()
+                ORDER BY RAND()
                 LIMIT %s
                 """,
                 (int(len_limit_actual/2),))
