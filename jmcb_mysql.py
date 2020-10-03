@@ -1,5 +1,6 @@
 import os
 import mysql.connector
+
 from urllib.parse import urlparse
 
 
@@ -22,8 +23,3 @@ def mysql_connect(database_url=os.environ["JAWSDB_URL"]):
 def mysql_disconnect(conn, cur):
     cur.close()
     conn.close()
-
-
-conn, cur = mysql_connect()
-print("Connected.")
-mysql_disconnect(conn, cur)
