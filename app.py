@@ -176,25 +176,22 @@ def mark_words(message_words_tuples, used=True):
     else:
         used_sql = "FALSE"
     
-    # New more efficient way to mark all words as used at once.
-    args_list = \
-        [(used_sql, sql_response[0]) for sql_response in message_words_tuples]
-    print(message_words_tuples)
-    print(args_list)
+    # Even newer and more efficient way to mark all words as used at once.
+    # Generate the list of ID's and the string of format strings
+    # into which they will be substituted.
+    args_list = [sql_response[0]) for sql_response in message_words_tuples]
+    args_list = [used_sql] + args_list
+    args_template_str = "%s,"*(len(args_list)-1) + "%s"
+    # Execute the update on the SQL server as a single query.
     cur.executemany("""
                     UPDATE wordlist
                     SET used = %s
-                    WHERE id = %s
-                    """,
+                    WHERE id IN ({})
+                    """.format(args_template_str),
                     args_list)
-    print("marked words as used")
     
     # Commit the changes and close connection to the SQL server.
-    print("committed to sql server")
     conn.commit()
-    print("waiting..")
-    sleep(20)
-    print("finished waiting")
     mysql_disconnect(conn, cur)
 
 # Function to generate the message of words to send to the user!
@@ -242,7 +239,6 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     del message_words_tuples[-1]
 
     # Mark all the words as used.
-    print("marking words as used")
     mark_words(message_words_tuples)
     
 
