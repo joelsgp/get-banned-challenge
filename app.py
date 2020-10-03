@@ -238,8 +238,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     mark_words(message_words_tuples)
     
 
-    # Commit the changes and close connection to the SQL server.
-    conn.commit()
+    # Close connection to the SQL server.
     mysql_disconnect(conn, cur)
     
     # Join and return the message.
