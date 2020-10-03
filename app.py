@@ -3,7 +3,7 @@ import json
 import psycopg2
 import psycopg2.extras
 
-from time import time, gmtime, strftime
+from time import time, gmtime, strftime, sleep
 from flask import Flask, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -192,6 +192,9 @@ def mark_words(message_words_tuples, used=True):
     # Commit the changes and close connection to the SQL server.
     print("committed to sql server")
     conn.commit()
+    print("waiting..")
+    sleep(20)
+    print("finished waiting")
     mysql_disconnect(conn, cur)
 
 # Function to generate the message of words to send to the user!
