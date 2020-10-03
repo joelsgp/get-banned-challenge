@@ -10,6 +10,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from flask_simple_geoip import SimpleGeoIP
 
 from jmcb_postgresql import postgresql_connect, postgresql_disconnect
+from jmcb_mysql import mysql_connect, mysql_disconnect
 
 
 
@@ -93,7 +94,7 @@ def meets_interval_requirements(request_ip):
     interval_seconds = INTERVAL_HOURS * (60**2)
 
     # Connect to PostgreSQL database.
-    conn, cur = postgresql_connect()
+    conn, cur = mysql_connect()
 
     
     # Check if IP is in the recent IPs from the database.
@@ -127,7 +128,7 @@ def meets_interval_requirements(request_ip):
         if request_timestamp > time()-interval_seconds:
             # If the interval has not yet passed, return False.
             # First close the connection to the SQL server.
-            postgresql_disconnect(conn, cur)
+            mysql_disconnect(conn, cur)
             return False, request_interval_seconds, last_message, timezone
 
         else:
@@ -159,7 +160,7 @@ def meets_interval_requirements(request_ip):
     # or the IP has never made a request before. Return True.
     # First commit the changes and close connection to the SQL server.
     conn.commit()
-    postgresql_disconnect(conn, cur)
+    mysql_disconnect(conn, cur)
     return True, request_interval_seconds, last_message, timezone
 
 
@@ -167,7 +168,7 @@ def meets_interval_requirements(request_ip):
 # Defaults to used.
 def mark_words(message_words_tuples, used=True):
     # Connect to PostgreSQL database
-    conn, cur = postgresql_connect()
+    conn, cur = mysql_connect()
     
     # Get the sql argument for whether the words are used.
     if used:
@@ -188,13 +189,13 @@ def mark_words(message_words_tuples, used=True):
     
     # Commit the changes and close connection to the SQL server.
     conn.commit()
-    postgresql_disconnect(conn, cur)
+    mysql_disconnect(conn, cur)
 
 # Function to generate the message of words to send to the user!
 # Returns the message as a string, and the list of (ID, word) tuples.
 def generate_message(len_limit=2000, suffix=" Heap."):
     # Connect to PostgreSQL database.
-    conn, cur = postgresql_connect()
+    conn, cur = mysql_connect()
     
     # This variable will track the cumultive length of each word chosen.
     cum_length = 0
@@ -217,7 +218,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     # If no words were left, return this.
     if cur.fetchone() is None:
         # Close connection to the SQL server.
-        postgresql_disconnect(conn, cur)
+        mysql_disconnect(conn, cur)
 
         return "WHOA! All the words have been used up! Nice one!", []
 
@@ -240,7 +241,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
 
     # Commit the changes and close connection to the SQL server.
     conn.commit()
-    postgresql_disconnect(conn, cur)
+    mysql_disconnect(conn, cur)
     
     # Join and return the message.
     message = " ".join(word_tuple[1] for word_tuple in message_words_tuples)
@@ -255,7 +256,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
 # Function to write the last message served to an IP to the database.
 def record_message(request_ip, message, message_words_tuples):
     # Connect to PostgreSQL database.
-    conn, cur = postgresql_connect()
+    conn, cur = mysql_connect()
 
     cur.execute("""
                 UPDATE recent_ips
@@ -266,7 +267,7 @@ def record_message(request_ip, message, message_words_tuples):
     
     # Commit the changes and close connection to the SQL server.
     conn.commit()
-    postgresql_disconnect(conn, cur)
+    mysql_disconnect(conn, cur)
 
 
 # Function to get progress info for the user.
@@ -276,7 +277,7 @@ def get_info():
     len_wordlist = 69903
     
     # Connect to PostgreSQL database.
-    conn, cur = postgresql_connect()
+    conn, cur = mysql_connect()
 
     # Get the number of used words in the wordlist from the server.
     cur.execute("SELECT COUNT(*) FROM wordlist WHERE used = TRUE")
@@ -295,7 +296,7 @@ def get_info():
            """.format(used_words, len_wordlist, used_words_percent)
 
     # Close connection to the SQL server.
-    postgresql_disconnect(conn, cur)
+    mysql_disconnect(conn, cur)
 
     # Return the info message.
     return info
@@ -375,7 +376,7 @@ def undo_message():
     request_ip = request.remote_addr
     
     # Connect to PostgreSQL database.
-    conn, cur = postgresql_connect()
+    conn, cur = mysql_connect()
 
     # A little reused code from meets_interval_requirements here,
     # could I improve that?
@@ -395,7 +396,7 @@ def undo_message():
         # If the list is empty it means the last message was already undone.
         if not last_message_words_lists:
             # Close connection to the SQL server.
-            postgresql_disconnect(conn, cur)
+            mysql_disconnect(conn, cur)
             
             # Get Jinja html template and serve.
             html_template = jinja_env.get_template("undo_already.html")
@@ -419,7 +420,7 @@ def undo_message():
 
             # Commit the changes and close connection to the SQL server.
             conn.commit()
-            postgresql_disconnect(conn, cur)
+            mysql_disconnect(conn, cur)
             
             # Get Jinja html template, fill and serve.
             html_template = jinja_env.get_template("undo_success.html")
@@ -427,7 +428,7 @@ def undo_message():
 
     else:
         # Close connection to the SQL server.
-        postgresql_disconnect(conn, cur)
+        mysql_disconnect(conn, cur)
         
         # Get Jinja html template and serve.
         html_template = jinja_env.get_template("undo_none.html")
