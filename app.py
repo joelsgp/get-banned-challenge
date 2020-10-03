@@ -183,7 +183,7 @@ def mark_words(message_words_tuples, used=True):
     args_list = [used_sql] + args_list
     args_template_str = "%s,"*(len(args_list)-1) + "%s"
     # Execute the update on the SQL server as a single query.
-    cur.executemany("""
+    cur.execute("""
                     UPDATE wordlist
                     SET used = %s
                     WHERE id IN ({})
