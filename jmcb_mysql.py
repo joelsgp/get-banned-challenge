@@ -15,7 +15,7 @@ def mysql_connect(database_url=os.environ["JAWSDB_URL"]):
                                   password=jdb_uri.password,
                                   host=jdb_uri.hostname,
                                   database=jdb_uri.path.replace("/", ""))
-    cur = conn.cursor()
+    cur = conn.cursor(buffered=True)
     return conn, cur
 
 # Function to close the connection to the database.
