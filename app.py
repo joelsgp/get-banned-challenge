@@ -212,7 +212,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
                 ORDER BY RANDOM()
                 LIMIT %s
                 """,
-                (len_limit_actual/2,))
+                (int(len_limit_actual/2),))
 
 
     # If no words were left, return this.
