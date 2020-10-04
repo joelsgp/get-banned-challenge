@@ -261,8 +261,6 @@ def get_info(conn, cur):
            Thanks to your help,
            we've gone through {} out of {} words already.
            That's {} percent (2d.p.)! 
-           Note: this is testing and the progress is not real
-           and will be reset soon.
            """.format(used_words, len_wordlist, used_words_percent)
 
     # Return the info message.
