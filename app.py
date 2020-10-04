@@ -3,13 +3,12 @@ import json
 import psycopg2
 import psycopg2.extras
 
-from time import time, gmtime, strftime, sleep
+from time import time, gmtime, strftime
 from flask import Flask, request, send_from_directory
 from werkzeug.middleware.proxy_fix import ProxyFix
 from jinja2 import Environment, PackageLoader, select_autoescape
 from flask_simple_geoip import SimpleGeoIP
 
-from jmcb_postgresql import postgresql_connect, postgresql_disconnect
 from jmcb_mysql import mysql_connect, mysql_disconnect
 
 
@@ -93,7 +92,7 @@ def meets_interval_requirements(request_ip):
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
 
-    # Connect to PostgreSQL database.
+    # Connect to MySQL database.
     conn, cur = mysql_connect()
 
     
@@ -167,7 +166,7 @@ def meets_interval_requirements(request_ip):
 # Function to mark words in the database as used or unused.
 # Defaults to used.
 def mark_words(message_words_tuples, used=True):
-    # Connect to PostgreSQL database
+    # Connect to MySQL database.
     conn, cur = mysql_connect()
     
     # Get the sql argument for whether the words are used.
@@ -197,7 +196,7 @@ def mark_words(message_words_tuples, used=True):
 # Function to generate the message of words to send to the user!
 # Returns the message as a string, and the list of (ID, word) tuples.
 def generate_message(len_limit=2000, suffix=" Heap."):
-    # Connect to PostgreSQL database.
+    # Connect to MySQL database.
     conn, cur = mysql_connect()
     
     # This variable will track the cumultive length of each word chosen.
@@ -257,7 +256,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
 
 # Function to write the last message served to an IP to the database.
 def record_message(request_ip, message, message_words_tuples):
-    # Connect to PostgreSQL database.
+    # Connect to MySQL database.
     conn, cur = mysql_connect()
 
     cur.execute("""
@@ -278,7 +277,7 @@ def get_info():
     # The length of the wordlist, so we don't have to get it from the server.
     len_wordlist = 69903
     
-    # Connect to PostgreSQL database.
+    # Connect to MySQL database.
     conn, cur = mysql_connect()
 
     # Get the number of used words in the wordlist from the server.
@@ -372,7 +371,7 @@ def undo_message():
     # Get IP for finding its last message, if any.
     request_ip = request.remote_addr
     
-    # Connect to PostgreSQL database.
+    # Connect to MySQL database.
     conn, cur = mysql_connect()
 
     # A little reused code from meets_interval_requirements here,
