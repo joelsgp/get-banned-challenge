@@ -360,6 +360,11 @@ def undo_message():
 
         # If the list is empty it means the last message was already undone.
         if not last_message_words_lists:
+            print("""
+                  Logs: {} - Unsuccessful undo.
+                  Last message already undone.
+                  """.format(request_ip))
+            
             # Close connection to the SQL server.
             mysql_disconnect(conn, cur)
             
@@ -368,6 +373,10 @@ def undo_message():
             return html_template.render()
                                     
         else:
+            print("""
+                  Logs: {} - Successful undo.
+                  """.format(request_ip))
+            
             # Mark all words from the last message as unused.
             mark_words(conn, cur, last_message_words_lists, used=False)
             # Update database to allow new words to be requested immediately
@@ -392,6 +401,11 @@ def undo_message():
             return html_template.render(last_message=last_message)
 
     else:
+        print("""
+              Logs: {} - Unsuccessful undo.
+              No message requested before by this IP.
+              """.format(request_ip))
+        
         # Close connection to the SQL server.
         mysql_disconnect(conn, cur)
         
