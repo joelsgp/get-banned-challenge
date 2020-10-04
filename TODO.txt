@@ -21,7 +21,7 @@
         [*]add get-banned-challenge.herokuapp.com/undo for marking the most recently retrieved words as unused
         [*]refactor generate_message for slightly better message length efficiency
         [*]add "copy to clipboard" button
-[ ]refactor to only connect to SQL database once for one request?
+        [*]refactor to only connect to SQL database once for one request?
         [*]finish making all pages (remaining: /undo) into Jinja templates
 [ ]prettify
 -------
