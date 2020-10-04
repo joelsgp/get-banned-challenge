@@ -39,5 +39,6 @@ migrating sql server
 [ ]add docstrings and clean up comments
 [ ]separate app.py into different modules/files for tidier code
 [ ]separate existing functions into smaller functions for tidier code?
+[ ]add inheritance for more efficient templates
 -------
 [ ]IDEA: client to automatically request words and send them on discord, with pyautogui?
