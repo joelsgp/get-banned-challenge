@@ -159,10 +159,11 @@ def meets_interval_requirements(conn, cur, request_ip):
 # Defaults to used.
 def mark_words(conn, cur, message_words_tuples, used=True):
     # Get the sql argument for whether the words are used.
-    if used:
-        used_sql = "TRUE"
-    else:
-        used_sql = "FALSE"
+##    if used:
+##        used_sql = "TRUE"
+##    else:
+##        used_sql = "FALSE"
+    used_sql = used
     
     # Even newer and more efficient way to mark all words as used at once.
     # Generate the list of ID's and the string of format strings
