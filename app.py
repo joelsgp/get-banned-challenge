@@ -365,6 +365,9 @@ def undo_message():
     if sql_response:
         last_message = sql_response[0]
         last_message_words_lists = sql_response[1]
+        # DEBUG
+        print(last_message)
+        print(last_message_words_lists)
 
         # If the list is empty it means the last message was already undone.
         if not last_message_words_lists:
