@@ -88,12 +88,9 @@ def str_next_request_available(request_interval_seconds, timezone):
 # and the last message the IP was served, both of which will
 # be None if no recent request had been made.
 # Also returns the timezone of the IP as a string format "+/-xx:00".
-def meets_interval_requirements(request_ip):
+def meets_interval_requirements(conn, cur, request_ip):
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
-
-    # Connect to MySQL database.
-    conn, cur = mysql_connect()
 
     
     # Check if IP is in the recent IPs from the database.
@@ -126,8 +123,6 @@ def meets_interval_requirements(request_ip):
         # Check if IP requested less than 6 hours ago
         if request_timestamp > time()-interval_seconds:
             # If the interval has not yet passed, return False.
-            # First close the connection to the SQL server.
-            mysql_disconnect(conn, cur)
             return False, request_interval_seconds, last_message, timezone
 
         else:
@@ -157,18 +152,14 @@ def meets_interval_requirements(request_ip):
 
     # If the function reaches this point then the interval has passed
     # or the IP has never made a request before. Return True.
-    # First commit the changes and close connection to the SQL server.
+    # First commit the changes to the SQL server.
     conn.commit()
-    mysql_disconnect(conn, cur)
     return True, request_interval_seconds, last_message, timezone
 
 
 # Function to mark words in the database as used or unused.
 # Defaults to used.
-def mark_words(message_words_tuples, used=True):
-    # Connect to MySQL database.
-    conn, cur = mysql_connect()
-    
+def mark_words(conn, cur, message_words_tuples, used=True):
     # Get the sql argument for whether the words are used.
     if used:
         used_sql = "TRUE"
@@ -189,16 +180,12 @@ def mark_words(message_words_tuples, used=True):
                 """.format(args_template_str),
                 args_list)
     
-    # Commit the changes and close connection to the SQL server.
+    # Commit the changes to the SQL server.
     conn.commit()
-    mysql_disconnect(conn, cur)
 
 # Function to generate the message of words to send to the user!
 # Returns the message as a string, and the list of (ID, word) tuples.
-def generate_message(len_limit=2000, suffix=" Heap."):
-    # Connect to MySQL database.
-    conn, cur = mysql_connect()
-    
+def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
     # This variable will track the cumultive length of each word chosen.
     cum_length = 0
     # The actual length limit will be the regular one minus the suffix length.
@@ -238,12 +225,9 @@ def generate_message(len_limit=2000, suffix=" Heap."):
     del message_words_tuples[-1]
 
     # Mark all the words as used.
-    mark_words(message_words_tuples)
+    mark_words(conn, cur, message_words_tuples)
     
 
-    # Close connection to the SQL server.
-    mysql_disconnect(conn, cur)
-    
     # Join and return the message.
     message = " ".join(word_tuple[1] for word_tuple in message_words_tuples)
     message += suffix
@@ -255,10 +239,7 @@ def generate_message(len_limit=2000, suffix=" Heap."):
 
 
 # Function to write the last message served to an IP to the database.
-def record_message(request_ip, message, message_words_tuples):
-    # Connect to MySQL database.
-    conn, cur = mysql_connect()
-
+def record_message(conn, cur, request_ip, message, message_words_tuples):
     cur.execute("""
                 UPDATE recent_ips
                 SET last_message = %s, lastm_tuples = %s
@@ -266,20 +247,16 @@ def record_message(request_ip, message, message_words_tuples):
                 """,
                 (message, json.dumps(message_words_tuples), request_ip))
     
-    # Commit the changes and close connection to the SQL server.
+    # Commit the changes to the SQL server.
     conn.commit()
-    mysql_disconnect(conn, cur)
 
 
 # Function to get progress info for the user.
 # Returns a string containing the info.
-def get_info():
+def get_info(conn, cur):
     # The length of the wordlist, so we don't have to get it from the server.
     len_wordlist = 69903
     
-    # Connect to MySQL database.
-    conn, cur = mysql_connect()
-
     # Get the number of used words in the wordlist from the server.
     cur.execute("SELECT COUNT(*) FROM wordlist WHERE used = TRUE")
     sql_response = cur.fetchone()
@@ -296,9 +273,6 @@ def get_info():
            and will be reset soon.
            """.format(used_words, len_wordlist, used_words_percent)
 
-    # Close connection to the SQL server.
-    mysql_disconnect(conn, cur)
-
     # Return the info message.
     return info
     
@@ -311,9 +285,12 @@ def hello_world():
     # Get IP for duplication checking.
     request_ip = request.remote_addr
 
+    # Connect to MySQL database.
+    conn, cur = mysql_connect()
+
     # check will be True if we are ok to send new words.
     req_cooldown_ok, request_interval_seconds, last_message, timezone \
-           = meets_interval_requirements(request_ip)
+           = meets_interval_requirements(conn, cur, request_ip)
     # Get the request interval in hours, or assign it as None if
     # there was no prior request by this IP.
     if request_interval_seconds:
@@ -349,12 +326,12 @@ def hello_world():
               """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
 
         # Get the actual message with the words.
-        message, message_words_tuples = generate_message()
+        message, message_words_tuples = generate_message(conn, cur)
         # Record the message to the database.
-        record_message(request_ip, message, message_words_tuples)
+        record_message(conn, cur, request_ip, message, message_words_tuples)
         # Choose whether to get the info on progress based on SHOW_INFO.
         if SHOW_INFO:
-            info = get_info()
+            info = get_info(conn, cur)
         else:
             info = ""
 
@@ -400,7 +377,7 @@ def undo_message():
                                     
         else:
             # Mark all words from the last message as unused.
-            mark_words(last_message_words_lists, used=False)
+            mark_words(conn, cur, last_message_words_lists, used=False)
             # Update database to allow new words to be requested immediately
             # and to mark the last message as undone.
             cur.execute("""
