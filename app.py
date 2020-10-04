@@ -313,17 +313,17 @@ def hello_world():
     request_ip = request.remote_addr
 
     # check will be True if we are ok to send new words.
-    check, request_interval_seconds, last_message, timezone \
+    req_cooldown_ok, request_interval_seconds, last_message, timezone \
            = meets_interval_requirements(request_ip)
-    # Get the request interval in hours, or assign it as None
-    # if there was no prior request by this IP.
+    # Get the request interval in hours, or assign it as None if
+    # there was no prior request by this IP.
     if request_interval_seconds:
         request_interval_hours = request_interval_seconds / (60**2)
         request_interval_hours = round(request_interval_hours, 4)
     else:
         request_interval_hours = None
         
-    if not check:
+    if not req_cooldown_ok:
         next_request_available = \
             str_next_request_available(request_interval_seconds, timezone)
         
