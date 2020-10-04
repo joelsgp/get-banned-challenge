@@ -184,11 +184,11 @@ def mark_words(message_words_tuples, used=True):
     args_template_str = "%s,"*(len(message_words_tuples)-1) + "%s"
     # Execute the update on the SQL server as a single query.
     cur.execute("""
-                    UPDATE wordlist
-                    SET used = %s
-                    WHERE id IN ({})
-                    """.format(args_template_str),
-                    args_list)
+                UPDATE wordlist
+                SET used = %s
+                WHERE id IN ({})
+                """.format(args_template_str),
+                args_list)
     
     # Commit the changes and close connection to the SQL server.
     conn.commit()
@@ -306,15 +306,10 @@ def get_info():
 
 
 
-# This is what runs when you go to the "homepage"
+# This is what runs when you go to the "homepage".
 @app.route("/")
 def hello_world():
-    # La meme.
-    # There are no spaces after the commas so I don't have to make it a
-    # multi line string lol
-    easter_egg = "<!--there is no frontend,take off your clothes,bottom text-->"
-    
-    # Get IP for duplication checking
+    # Get IP for duplication checking.
     request_ip = request.remote_addr
 
     # check will be True if we are ok to send new words.
@@ -322,7 +317,7 @@ def hello_world():
            = meets_interval_requirements(request_ip)
     # Get the request interval in hours, or assign it as None
     # if there was no prior request by this IP.
-    if request_interval_seconds is not None:
+    if request_interval_seconds:
         request_interval_hours = request_interval_seconds / (60**2)
         request_interval_hours = round(request_interval_hours, 4)
     else:
