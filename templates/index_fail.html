@@ -8,6 +8,10 @@
   IP duplication error: {{ request_ip }}, you already requested words {{ last_interval }} hour(s) ago! You can next request at {{ next_available }} (UTC{{ timezone }}).
     Please ensure you wait at least {{ interval_hours }} hours before requesting new words.
     <br>
+    <a href="https://get-banned-challenge.herokuapp.com/undo">
+      If you requested these words by accident and are not going to use them, please mark them as unused again by clicking here. This will also reset the timer.
+    </a>
+    <br>
     <br>
     The last set of words you received is:
     <br>
