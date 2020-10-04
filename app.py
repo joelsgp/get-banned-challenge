@@ -362,7 +362,7 @@ def undo_message():
     # If the SQL response is not None, it means the IP is there.
     if sql_response:
         last_message = sql_response[0]
-        last_message_words_lists = sql_response[1]
+        last_message_words_lists = json.loads(sql_response[1])
         # DEBUG
         print(last_message)
         print(last_message_words_lists)
