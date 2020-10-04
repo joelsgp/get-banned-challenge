@@ -24,6 +24,7 @@
         [*]refactor to only connect to SQL database once for one request?
         [*]finish making all pages (remaining: /undo) into Jinja templates
 [ ]prettify
+[ ]add logging for /undo
 -------
 migrating sql server
 [*]provision addon
