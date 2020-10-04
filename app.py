@@ -176,7 +176,7 @@ def mark_words(conn, cur, message_words_tuples, used=True):
                 SET used = %s
                 WHERE id IN ({})
                 """.format(args_template_str),
-                args_list)
+                tuple(args_list))
     
     # Commit the changes to the SQL server.
     conn.commit()
