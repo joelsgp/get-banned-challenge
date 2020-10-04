@@ -1,7 +1,5 @@
 import os
 import json
-import psycopg2
-import psycopg2.extras
 
 from time import time, gmtime, strftime
 from flask import Flask, request, send_from_directory
