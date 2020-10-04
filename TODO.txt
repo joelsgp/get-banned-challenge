@@ -25,6 +25,7 @@
         [*]finish making all pages (remaining: /undo) into Jinja templates
 [ ]prettify
 [ ]add logging for /undo
+[ ]refactor to remove "message" column from last_ips, as that information is included in lastm_tuples.
 -------
 migrating sql server
 [*]provision addon
