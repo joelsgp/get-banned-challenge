@@ -2,20 +2,26 @@ import csv
 import hashlib
 
 # Number of iterations of sha256.
-ITERATIONS = 1000
+ITERATIONS = 1000000
 
-# Recursive function to loop hashing.
+# Function to loop hashing.
+# No longer recursive because of Python recursion depth limit of 1000.
 def sha256_iterate(source, iterations):
     if type(source) == str:
         source = source.encode("utf8")
     
     if iterations < 1:
         raise ValueError("Iterations must be one (1) or above.")
-    elif iterations == 1:
-        return hashlib.sha256(source).hexdigest()
     else:
         source_hash = hashlib.sha256(source).digest()
-        return sha256_iterate(source_hash, iterations-1)
+        iterations -= 1
+        
+        while iterations >= 1:
+            source_hash = hashlib.sha256(source_hash).digest()
+
+            iterations -= 1
+
+    return hashlib.sha256(source_hash).hexdigest()
 
 # Run on file.
 with open("../archive/alpha_supporters.csv", "r") as file:

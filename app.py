@@ -413,6 +413,12 @@ def undo_message():
 
 
 
+@app.route("/alphasupporters")
+def alphasupporters():
+    # Get Jinja html template and serve.
+    html_template = jinja_env.get_template("alphasupporters.html")
+    return html_template.render()
+
 # This serves a favicon to the browser
 @app.route("/favicon.ico")
 def favicon():
