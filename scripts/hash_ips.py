@@ -28,4 +28,4 @@ with open("../archive/alpha_supporters.csv", "r") as file:
     reader  = csv.reader(file)
 
     for row in reader:
-        print(sha256_iterate(row[0], ITERATIONS))
+        print(sha256_iterate(row[0], ITERATIONS) + "<br>")
