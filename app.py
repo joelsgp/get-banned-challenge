@@ -11,7 +11,6 @@ from jmcb_mysql import mysql_connect, mysql_disconnect
 
 
 
-DATABASE_URL = os.environ["DATABASE_URL"]
 GEOIPIFY_API_KEY = os.environ["GEOIPIFY_API_KEY"]
 # This is the enforced interval between providing new words.
 ##INTERVAL_HOURS = 6
