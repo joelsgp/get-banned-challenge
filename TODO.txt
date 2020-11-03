@@ -27,6 +27,8 @@
         [*]add logging for /undo
 [ ]refactor to remove "message" column from last_ips, as that information is included in lastm_tuples.
         [*]add /alphasupporters
+
+[ ]add testing toggle with a single constant
 -------
 migrating sql server
 [*]provision addon
