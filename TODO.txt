@@ -28,6 +28,7 @@
 [ ]refactor to remove "message" column from last_ips, as that information is included in lastm_tuples.
         [*]add /alphasupporters
 [ ]markdown TODO
+[ ]use a few lines of js instead of a whole geolocation api
 
 [ ]add testing toggle with a single constant
 -------
