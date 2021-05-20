@@ -38,10 +38,11 @@ jinja_env = Environment(loader=PackageLoader("app", "templates"),
                         autoescape=select_autoescape(["html", "xml"]))
 
 
-# Function to get the timezone of the request ip within a flask app
-# using flask_simple_geoip.
-# Returns None if failed, or the timezone as a string.
 def simple_geoip_get_timezone():
+    """Get the timezone of a request within a Flask app using flask_simple_geoip.
+
+    Returns the timezone as a string, or None if failed.
+    """
     geoip_data = simple_geoip.get_geoip_data()
     if geoip_data is None:
         timezone = None
@@ -51,11 +52,14 @@ def simple_geoip_get_timezone():
     return timezone
 
 
-# Function to get the next time the user can request.
-# Takes the time until next request in seconds and the user's timezone
-# as a string format "+/-xx:00" as arguments.
-# Returns the next time the user can request as a string format "%H:%M"
 def str_next_request_available(request_interval_seconds, timezone):
+    """Get the next time a user can request new words.
+
+    Args:
+        request_interval_seconds -- self explanatory
+        timezone -- tz in the format +-xx:00
+    Returns the next request available time as an HH:MM string.
+    """
     print("Logs: This IP timezone {}".format(timezone))
     # Calculate the next time a request can be made in seconds
     next_request_seconds = time() + request_interval_seconds
@@ -73,15 +77,19 @@ def str_next_request_available(request_interval_seconds, timezone):
     return next_request_str
 
 
-# Function to check if the requesting IP has not made a request within the
-# time interval.
-# Returns a boolean that is true if the IP has not made a request within the
-# time interval.
-# Also returns the time since last request in seconds,
-# and the last message the IP was served, both of which will
-# be None if no recent request had been made.
-# Also returns the timezone of the IP as a string format "+/-xx:00".
 def meets_interval_requirements(conn, cur, request_ip):
+    """Check if an IP address has not made a request within the required time interval.
+
+    Args:
+        conn -- database connection
+        cur -- database cursor
+        request_ip -- ip address as a string
+    Returns:
+        a bool indicating whether the requirement is met
+        the request interval in seconds
+        the last words given to that user
+        the timezone of the user as provided by simple_geoip_get_timezone
+    """
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
     
@@ -148,9 +156,16 @@ def meets_interval_requirements(conn, cur, request_ip):
     return True, request_interval_seconds, last_message, timezone
 
 
-# Function to mark words in the database as used or unused.
-# Defaults to used.
 def mark_words(conn, cur, message_words_tuples, used=True):
+    """Mark words as used or unused in the database.
+
+    Args:
+        conn -- database connection
+        cur -- database cursor
+        message_words_tuples -- a tuple of words to mark
+        used -- whether to mark the words as used or unused, defaults to used
+    Returns nothing.
+    """
     # Even newer and more efficient way to mark all words as used at once.
     # Generate the list of ID's and the string of format strings
     # into which they will be substituted.
@@ -169,9 +184,18 @@ def mark_words(conn, cur, message_words_tuples, used=True):
     conn.commit()
 
 
-# Function to generate the message of words to send to the user!
-# Returns the message as a string, and the list of (ID, word) tuples.
 def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
+    """Generate a 'message' of random words.
+
+    Args:
+        conn -- database connection
+        cur -- database cursor
+        len_limit -- character limit of message
+        suffix -- appended to the end of the message, included in character limit
+    Returns:
+        The message as a string
+        A list of tuples of (word id, word)
+    """
     # This variable will track the cumulative length of each word chosen.
     cum_length = 0
     # The actual length limit will be the regular one minus the suffix length.
@@ -220,8 +244,15 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
     return message, message_words_tuples
 
 
-# Function to write the last message served to an IP to the database.
 def record_message(conn, cur, request_ip, message, message_words_tuples):
+    """Record the last words served to an address to the database.
+
+    Args:
+        conn -- database connection
+        cur -- database cursor
+        request_ip -- IP address as a string
+        message -- last message given to the address, as a single string
+    """
     cur.execute("""
                 UPDATE recent_ips
                 SET last_message = %s, lastm_tuples = %s
@@ -233,9 +264,14 @@ def record_message(conn, cur, request_ip, message, message_words_tuples):
     conn.commit()
 
 
-# Function to get progress info for the user.
-# Returns a string containing the info.
 def get_info(conn, cur):
+    """Get a thanks message on current progress through the word list.
+
+    Args:
+        conn -- database connection
+        cur -- database cursor
+    Returns the progress message as a string.
+    """
     # The length of the wordlist, so we don't have to get it from the server.
     len_wordlist = 69903
     
@@ -257,9 +293,9 @@ def get_info(conn, cur):
     return info
 
 
-# This is what runs when you go to the "homepage".
 @app.route("/")
 def hello_world():
+    """Serve the homepage."""
     # Get IP for duplication checking.
     request_ip = request.remote_addr
 
@@ -319,10 +355,9 @@ def hello_world():
                                     info=info, message=message)
 
 
-# When you go to this page, the app will attempt to undo the last message
-# you requested by marking those words as unused on the database.
 @app.route("/undo")
 def undo_message():
+    """Serve the undo page, which attempts to undo your last request by marking the words as unused.    """
     # Get IP for finding its last message, if any.
     request_ip = request.remote_addr
     
@@ -402,12 +437,10 @@ def undo_message():
 
 @app.route("/alphasupporters")
 def alphasupporters():
-    # Get Jinja html template and serve.
     html_template = jinja_env.get_template("alphasupporters.html")
     return html_template.render()
 
 
-# This serves a favicon to the browser
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
