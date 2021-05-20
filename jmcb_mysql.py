@@ -11,12 +11,15 @@ def mysql_connect(database_url=os.environ["JAWSDB_URL"]):
     jdb_uri = urlparse(database_url)
 
     # Connect.
-    conn= mysql.connector.connect(user=jdb_uri.username,
-                                  password=jdb_uri.password,
-                                  host=jdb_uri.hostname,
-                                  database=jdb_uri.path.replace("/", ""))
+    conn = mysql.connector.connect(
+        user=jdb_uri.username,
+        password=jdb_uri.password,
+        host=jdb_uri.hostname,
+        database=jdb_uri.path.replace("/", "")
+    )
     cur = conn.cursor(buffered=True)
     return conn, cur
+
 
 # Function to close the connection to the database.
 # Takes a connection and a cursor as arguments.

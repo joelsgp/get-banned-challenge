@@ -10,10 +10,9 @@ from flask_simple_geoip import SimpleGeoIP
 from jmcb_mysql import mysql_connect, mysql_disconnect
 
 
-
 GEOIPIFY_API_KEY = os.environ["GEOIPIFY_API_KEY"]
 # This is the enforced interval between providing new words.
-##INTERVAL_HOURS = 6
+# INTERVAL_HOURS = 6
 INTERVAL_HOURS = 0.005
 # This determines whether the app will tell the user the progress
 # through the words.
@@ -21,7 +20,6 @@ INTERVAL_HOURS = 0.005
 # encouraging.
 # Right now it's turned on for testing.
 SHOW_INFO = True
-
 
 
 # Create "app"
@@ -40,8 +38,6 @@ jinja_env = Environment(loader=PackageLoader("app", "templates"),
                         autoescape=select_autoescape(["html", "xml"]))
 
 
-
-
 # Function to get the timezone of the request ip within a flask app
 # using flask_simple_geoip.
 # Returns None if failed, or the timezone as a string.
@@ -53,6 +49,7 @@ def simple_geoip_get_timezone():
         timezone = geoip_data["location"]["timezone"]
 
     return timezone
+
 
 # Function to get the next time the user can request.
 # Takes the time until next request in seconds and the user's timezone
@@ -76,7 +73,6 @@ def str_next_request_available(request_interval_seconds, timezone):
     return next_request_str
 
 
-
 # Function to check if the requesting IP has not made a request within the
 # time interval.
 # Returns a boolean that is true if the IP has not made a request within the
@@ -88,7 +84,6 @@ def str_next_request_available(request_interval_seconds, timezone):
 def meets_interval_requirements(conn, cur, request_ip):
     # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
-
     
     # Check if IP is in the recent IPs from the database.
     cur.execute("""
@@ -105,7 +100,6 @@ def meets_interval_requirements(conn, cur, request_ip):
         last_message = sql_response[1]
         timezone = sql_response[2]
         print("Logs: last request by this IP at {}".format(request_timestamp))
-
 
         # If the timezone recorded is None, try to get the timezone.
         if not timezone:
@@ -174,18 +168,19 @@ def mark_words(conn, cur, message_words_tuples, used=True):
     # Commit the changes to the SQL server.
     conn.commit()
 
+
 # Function to generate the message of words to send to the user!
 # Returns the message as a string, and the list of (ID, word) tuples.
 def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
-    # This variable will track the cumultive length of each word chosen.
+    # This variable will track the cumulative length of each word chosen.
     cum_length = 0
     # The actual length limit will be the regular one minus the suffix length.
     len_limit_actual = len_limit-len(suffix)
     # Declare a variables for the message words as an empty list.
-    message_words = []
+    # message_words = []
     message_words_tuples = []
 
-    #Fetch a number of random words from the server.
+    # Fetch a number of random words from the server.
     cur.execute("""
                 SELECT id,word FROM wordlist
                 WHERE used = FALSE
@@ -194,14 +189,12 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
                 """,
                 (int(len_limit_actual/2),))
 
-
     # If no words were left, return this.
     if cur.fetchone() is None:
         # Close connection to the SQL server.
         mysql_disconnect(conn, cur)
 
         return "WHOA! All the words have been used up! Nice one!", []
-
 
     # Keep adding words until you reach the message char limit.
     print("Logs: Generating message.")
@@ -217,7 +210,6 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
 
     # Mark all the words as used.
     mark_words(conn, cur, message_words_tuples)
-    
 
     # Join and return the message.
     message = " ".join(word_tuple[1] for word_tuple in message_words_tuples)
@@ -226,7 +218,6 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
     # Here is your message!
     print("Logs: Here is your message!")
     return message, message_words_tuples
-
 
 
 # Function to write the last message served to an IP to the database.
@@ -264,8 +255,6 @@ def get_info(conn, cur):
 
     # Return the info message.
     return info
-    
-
 
 
 # This is what runs when you go to the "homepage".
@@ -279,7 +268,7 @@ def hello_world():
 
     # check will be True if we are ok to send new words.
     req_cooldown_ok, request_interval_seconds, last_message, timezone \
-           = meets_interval_requirements(conn, cur, request_ip)
+        = meets_interval_requirements(conn, cur, request_ip)
     # Get the request interval in hours, or assign it as None if
     # there was no prior request by this IP.
     if request_interval_seconds:
@@ -411,12 +400,12 @@ def undo_message():
         return html_template.render()
 
 
-
 @app.route("/alphasupporters")
 def alphasupporters():
     # Get Jinja html template and serve.
     html_template = jinja_env.get_template("alphasupporters.html")
     return html_template.render()
+
 
 # This serves a favicon to the browser
 @app.route("/favicon.ico")
@@ -424,8 +413,6 @@ def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico',
                                mimetype='image/vnd.microsoft.icon')
-
-
 
 
 if __name__ == "__main__":
