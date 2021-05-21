@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import json
 import time
@@ -61,7 +63,7 @@ def meets_interval_requirements(conn, cur, request_ip):
     
     # Check if IP is in the recent IPs from the database.
     cur.execute(
-        "SELECT access_time, last_messageFROM recent_ips WHERE ip = %s",
+        "SELECT access_time, last_message FROM recent_ips WHERE ip = %s",
         (request_ip,)
     )
     sql_response = cur.fetchone()
