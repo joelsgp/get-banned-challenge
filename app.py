@@ -1,11 +1,11 @@
 import os
 import json
+import time
 
-from time import time, gmtime, strftime
-from flask import Flask, request, send_from_directory
+import flask
+import jinja2
+import flask_simple_geoip
 from werkzeug.middleware.proxy_fix import ProxyFix
-from jinja2 import Environment, PackageLoader, select_autoescape
-from flask_simple_geoip import SimpleGeoIP
 
 from jmcb_mysql import mysql_connect, mysql_disconnect
 
@@ -23,19 +23,21 @@ SHOW_INFO = True
 
 
 # Create "app"
-app = Flask(__name__)
+app = flask.Flask(__name__)
 
 # This makes it so that request.remote_addr will
 # show the real ip and not localhost.
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # Initialise the geoip extension.
-simple_geoip = SimpleGeoIP(app)
+simple_geoip = flask_simple_geoip.SimpleGeoIP(app)
 
 # Configure Jinja environment.
 # jinja ninja
-jinja_env = Environment(loader=PackageLoader("app", "templates"),
-                        autoescape=select_autoescape(["html", "xml"]))
+jinja_env = jinja2.Environment(
+    loader=jinja2.PackageLoader("app", "templates"),
+    autoescape=jinja2.select_autoescape(["html", "xml"])
+)
 
 
 def simple_geoip_get_timezone():
@@ -62,7 +64,7 @@ def str_next_request_available(request_interval_seconds, timezone):
     """
     print("Logs: This IP timezone {}".format(timezone))
     # Calculate the next time a request can be made in seconds
-    next_request_seconds = time() + request_interval_seconds
+    next_request_seconds = time.time() + request_interval_seconds
     # Calculate the timezone in seconds west of UTC
     if timezone[1] == "0":
         timezone_seconds = -(int(timezone[0:3:2]) * 60**2)
@@ -72,8 +74,8 @@ def str_next_request_available(request_interval_seconds, timezone):
     next_request_local = next_request_seconds - timezone_seconds
 
     # Format the time as a string
-    next_request_struct_time = gmtime(next_request_local)
-    next_request_str = strftime("%H:%M", next_request_struct_time)
+    next_request_struct_time = time.gmtime(next_request_local)
+    next_request_str = time.strftime("%H:%M", next_request_struct_time)
     return next_request_str
 
 
@@ -117,10 +119,10 @@ def meets_interval_requirements(conn, cur, request_ip):
                         (timezone, request_ip))
         
         # Calculate the time since last request.
-        request_interval_seconds = time()-request_timestamp
+        request_interval_seconds = time.time()-request_timestamp
         
         # Check if IP requested less than 6 hours ago
-        if request_timestamp > time()-interval_seconds:
+        if request_timestamp > time.time()-interval_seconds:
             # If the interval has not yet passed, return False.
             return False, request_interval_seconds, last_message, timezone
 
@@ -131,7 +133,7 @@ def meets_interval_requirements(conn, cur, request_ip):
                         SET access_time = %s
                         WHERE ip = %s
                         """,
-                        (time(), request_ip))
+                        (time.time(), request_ip))
         
     else:
         # The IP wasn't there so set the last request time and the last
@@ -147,7 +149,7 @@ def meets_interval_requirements(conn, cur, request_ip):
                     INSERT INTO recent_ips(ip, access_time, timezone)
                     VALUES(%s, %s, %s)
                     """,
-                    (request_ip, time(), timezone))
+                    (request_ip, time.time(), timezone))
 
     # If the function reaches this point then the interval has passed
     # or the IP has never made a request before. Return True.
@@ -297,7 +299,7 @@ def get_info(conn, cur):
 def hello_world():
     """Serve the homepage."""
     # Get IP for duplication checking.
-    request_ip = request.remote_addr
+    request_ip = flask.request.remote_addr
 
     # Connect to MySQL database.
     conn, cur = mysql_connect()
@@ -359,7 +361,7 @@ def hello_world():
 def undo_message():
     """Serve the undo page, which attempts to undo your last request by marking the words as unused.    """
     # Get IP for finding its last message, if any.
-    request_ip = request.remote_addr
+    request_ip = flask.request.remote_addr
     
     # Connect to MySQL database.
     conn, cur = mysql_connect()
@@ -409,7 +411,7 @@ def undo_message():
                         lastm_tuples=%s
                         WHERE ip = %s
                         """,
-                        (time()-(INTERVAL_HOURS*60**2),
+                        (time.time()-(INTERVAL_HOURS*60**2),
                          json.dumps([]),
                          request_ip))
 
@@ -443,9 +445,11 @@ def alphasupporters():
 
 @app.route("/favicon.ico")
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'favicon.ico',
-                               mimetype='image/vnd.microsoft.icon')
+    return flask.send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
 
 
 if __name__ == "__main__":
