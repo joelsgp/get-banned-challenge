@@ -53,9 +53,9 @@ Update: the word was revealed by accident. It was Epäjärjestelmällistyttämä
 - [ ] IDEA: client to automatically request words and send them on discord, with pyautogui?
 
 ### rewrite
-- [ ] remove geoip and user frontend thing instead (didn't I write this down somewhere already?)
+- [ ] remove geoip and use frontend thing instead (didn't I write this down somewhere already?)
 - [x] finish docstrings
 - [ ] use mostly just conn instead of conn, cur pairs
-- [ ] read over all code and improve quality
+- [x] read over all code and improve quality
 - [ ] type hinting
 - [ ] handle time stuff better, probably with datetime objects

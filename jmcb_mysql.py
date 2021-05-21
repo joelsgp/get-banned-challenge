@@ -4,13 +4,16 @@ import mysql.connector
 from urllib.parse import urlparse
 
 
-# Function to connect to default main SQL database.
-# Returns connection and cursor.
 def mysql_connect(database_url=os.environ["JAWSDB_URL"]):
+    """Connect to sql database.
+
+    Args:
+        database_url -- url as a string, should include username, password, host and database
+    Returns conn, cur
+    """
     # Split the whole URL into the needed components.
     jdb_uri = urlparse(database_url)
 
-    # Connect.
     conn = mysql.connector.connect(
         user=jdb_uri.username,
         password=jdb_uri.password,
@@ -21,8 +24,7 @@ def mysql_connect(database_url=os.environ["JAWSDB_URL"]):
     return conn, cur
 
 
-# Function to close the connection to the database.
-# Takes a connection and a cursor as arguments.
 def mysql_disconnect(conn, cur):
+    """Close a db connection."""
     cur.close()
     conn.close()
