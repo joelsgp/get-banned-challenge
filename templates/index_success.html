@@ -4,7 +4,7 @@
     <title>:) Gameboy Colour</title>
 </head>
 <body>
-  hello world {{ request_ip }} timezone UTC{{ timezone }}
+  hello world {{ request_ip }}
   <br>
   {{ info }}
   <br>
@@ -23,7 +23,7 @@
 
   <script type="text/javascript">
     function copyMessage() {
-      var copyText = document.getElementById("message");
+      let copyText = document.getElementById("message");
       copyText.select();
       copyText.setSelectionRange(0, 2000);
       document.execCommand("copy");

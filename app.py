@@ -9,7 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from jmcb_mysql import mysql_connect, mysql_disconnect
 
 
-GEOIPIFY_API_KEY = os.environ["GEOIPIFY_API_KEY"]
+ISO8601_FORMAT = "%Y-%m-%dT%H:%M:%S.000Z"
 # This is the enforced interval between providing new words.
 # INTERVAL_HOURS = 6
 INTERVAL_HOURS = 0.005
@@ -20,8 +20,6 @@ SHOW_INFO = True
 app = flask.Flask(__name__)
 # This makes it so that request.remote_addr will show the real ip and not localhost.
 app.wsgi_app = ProxyFix(app.wsgi_app)
-# Initialise the geoip extension.
-simple_geoip = flask_simple_geoip.SimpleGeoIP(app)
 
 
 # jinja ninja
@@ -31,27 +29,19 @@ jinja_env = jinja2.Environment(
 )
 
 
-def str_next_request_available(request_interval_seconds, timezone):
+def str_next_request_available(request_interval_seconds):
     """Get the next time a user can request new words.
 
     Args:
         request_interval_seconds -- self explanatory
-        timezone -- tz in the format +-xx:00
-    Returns the next request available time as an HH:MM string.
+    Returns the next request available time as an ISO 8601 formatted string for the client js to use.
     """
-    print(f"Logs: This IP timezone {timezone}")
     # Calculate the next time a request can be made in seconds
     next_request_seconds = time.time() + request_interval_seconds
-    # Calculate the timezone in seconds west of UTC
-    if timezone[1] == "0":
-        timezone_seconds = -(int(timezone[0:3:2]) * 60**2)
-    else:
-        timezone_seconds = -(int(timezone[0:3]) * 60**2)
-    # Calculate the next request time in seconds for that timezone
-    next_request_local = next_request_seconds - timezone_seconds
 
-    next_request_struct_time = time.gmtime(next_request_local)
-    next_request_str = time.strftime("%H:%M", next_request_struct_time)
+    # format it
+    next_request_struct_time = time.gmtime(next_request_seconds)
+    next_request_str = time.strftime(ISO8601_FORMAT, next_request_struct_time)
     return next_request_str
 
 
@@ -66,13 +56,12 @@ def meets_interval_requirements(conn, cur, request_ip):
         a bool indicating whether the requirement is met
         the request interval in seconds
         the last words given to that user
-        the timezone of the user as provided by simple_geoip_get_timezone
     """
     interval_seconds = INTERVAL_HOURS * (60**2)
     
     # Check if IP is in the recent IPs from the database.
     cur.execute(
-        "SELECT access_time, last_message, timezone FROM recent_ips WHERE ip = %s",
+        "SELECT access_time, last_messageFROM recent_ips WHERE ip = %s",
         (request_ip,)
     )
     sql_response = cur.fetchone()
@@ -81,23 +70,14 @@ def meets_interval_requirements(conn, cur, request_ip):
     if sql_response:
         request_timestamp = sql_response[0]
         last_message = sql_response[1]
-        timezone = sql_response[2]
         print(f"Logs: last request by this IP at {request_timestamp}")
-
-        # If the timezone recorded is None, try to get the timezone and record it.
-        if not timezone:
-            timezone = simple_geoip_get_timezone()
-            cur.execute(
-                "UPDATE recent_ips SET timezone = %s WHERE ip = %s",
-                (timezone, request_ip)
-            )
         
         # Calculate the time since last request.
         request_interval_seconds = time.time() - request_timestamp
         
         # Check if IP requested less than 6 hours ago
         if request_timestamp > time.time()-interval_seconds:
-            return False, request_interval_seconds, last_message, timezone
+            return False, request_interval_seconds, last_message
 
         else:
             # If the interval has passed, reset the timer for the IP.
@@ -110,18 +90,16 @@ def meets_interval_requirements(conn, cur, request_ip):
         # The IP wasn't there so set the last request time and the last message served to None for the return value.
         request_interval_seconds = None
         last_message = None
-
-        timezone = simple_geoip_get_timezone()
         
         # The IP has never visited before, so add it to the database.
         cur.execute(
-            "INSERT INTO recent_ips(ip, access_time, timezone) VALUES(%s, %s, %s)",
-            (request_ip, time.time(), timezone)
+            "INSERT INTO recent_ips(ip, access_time) VALUES(%s, %s)",
+            (request_ip, time.time())
         )
 
     # If the function reaches this point then the interval has passed or the IP has never made a request before.
     conn.commit()
-    return True, request_interval_seconds, last_message, timezone
+    return True, request_interval_seconds, last_message
 
 
 def mark_words(conn, cur, message_words_tuples, used=True):
@@ -251,8 +229,7 @@ def hello_world():
     conn, cur = mysql_connect()
 
     # check will be True if we are ok to send new words.
-    req_cooldown_ok, request_interval_seconds, last_message, timezone \
-        = meets_interval_requirements(conn, cur, request_ip)
+    req_cooldown_ok, request_interval_seconds, last_message = meets_interval_requirements(conn, cur, request_ip)
     # Get the request interval in hours, or assign it as None if there was no prior request by this IP.
     if request_interval_seconds:
         request_interval_hours = request_interval_seconds / (60**2)
@@ -261,8 +238,7 @@ def hello_world():
         request_interval_hours = None
         
     if not req_cooldown_ok:
-        next_request_available = \
-            str_next_request_available(request_interval_seconds, timezone)
+        next_request_available = str_next_request_available(request_interval_seconds)
         
         print(
             f"Logs: {request_ip} - Unsuccessful request. "
@@ -274,7 +250,7 @@ def hello_world():
         html_template = jinja_env.get_template("index_fail.html")
         return html_template.render(
             request_ip=request_ip, last_interval=request_interval_hours, next_available=next_request_available,
-            timezone=timezone, interval_hours=INTERVAL_HOURS, last_message=last_message
+            interval_hours=INTERVAL_HOURS, last_message=last_message
         )
 
     else:
@@ -295,7 +271,7 @@ def hello_world():
 
         html_template = jinja_env.get_template("index_success.html")
         return html_template.render(
-            request_ip=request_ip, timezone=timezone, info=info, message=message
+            request_ip=request_ip, info=info, message=message
         )
 
 

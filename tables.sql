@@ -33,7 +33,6 @@ DROP TABLE IF EXISTS `recent_ips`;
 CREATE TABLE `recent_ips` (
   `ip` text COLLATE utf8_unicode_ci NOT NULL,
   `access_time` double unsigned NOT NULL,
-  `timezone` text COLLATE utf8_unicode_ci,
   `last_message` text COLLATE utf8_unicode_ci,
   `lastm_tuples` json DEFAULT NULL,
   PRIMARY KEY (`ip`(120))
