@@ -3,10 +3,13 @@
 import os
 import json
 import time
+import typing
 
 import flask
 import jinja2
 from werkzeug.middleware.proxy_fix import ProxyFix
+from mysql.connector.connection import MySQLConnection
+from mysql.connector.cursor import MySQLCursor
 
 from jmcb_mysql import mysql_connect, mysql_disconnect
 
@@ -32,7 +35,7 @@ jinja_env = jinja2.Environment(
 )
 
 
-def str_next_request_available(request_interval_seconds):
+def str_next_request_available(request_interval_seconds: float) -> str:
     """Get the next time a user can request new words.
 
     Args:
@@ -48,7 +51,9 @@ def str_next_request_available(request_interval_seconds):
     return next_request_str
 
 
-def meets_interval_requirements(conn, cur, request_ip):
+def meets_interval_requirements(
+        conn: MySQLConnection, cur: MySQLCursor, request_ip: str
+) -> typing.Tuple[bool, int, str]:
     """Check if an IP address has not made a request within the required time interval.
 
     Args:
@@ -105,7 +110,10 @@ def meets_interval_requirements(conn, cur, request_ip):
     return True, request_interval_seconds, last_message
 
 
-def mark_words(conn, cur, message_words_tuples, used=True):
+def mark_words(
+        conn: MySQLConnection, cur: MySQLCursor,
+        message_words_tuples: typing.List[typing.Tuple[int, str]], used: bool = True
+):
     """Mark words as used or unused in the database.
 
     Args:
@@ -113,11 +121,11 @@ def mark_words(conn, cur, message_words_tuples, used=True):
         cur -- database cursor
         message_words_tuples -- a tuple of words to mark
         used -- whether to mark the words as used or unused, defaults to used
-    Returns nothing.
     """
     # Even newer and more efficient way to mark all words as used at once.
     # Generate the list of ID's and the string of format string markers into which they will be substituted.
     args_list = [sql_response[0] for sql_response in message_words_tuples]
+    # noinspection PyTypeChecker
     args_list = [used] + args_list
     args_template_str = ",".join(["%s"] * len(message_words_tuples))
     # Execute the update on the SQL server as a single query.
@@ -128,7 +136,9 @@ def mark_words(conn, cur, message_words_tuples, used=True):
     conn.commit()
 
 
-def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
+def generate_message(
+        conn: MySQLConnection, cur: MySQLCursor, len_limit: int = 2000, suffix: str = " Heap."
+) -> typing.Tuple[str, typing.List[typing.Tuple[int, str]]]:
     """Generate a 'message' of random words.
 
     Args:
@@ -182,7 +192,10 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
     return message, message_words_tuples
 
 
-def record_message(conn, cur, request_ip, message, message_words_tuples):
+def record_message(
+        conn: MySQLConnection, cur: MySQLCursor,
+        request_ip: str, message: str, message_words_tuples: typing.List[typing.Tuple[int, str]]
+):
     """Record the last words served to an address to the database.
 
     Args:
@@ -198,7 +211,7 @@ def record_message(conn, cur, request_ip, message, message_words_tuples):
     conn.commit()
 
 
-def get_info(conn, cur):
+def get_info(conn: MySQLConnection, cur: MySQLCursor) -> str:
     """Get a thanks message on current progress through the word list.
 
     Args:

@@ -57,5 +57,5 @@ Update: the word was revealed by accident. It was Epäjärjestelmällistyttämä
 - [x] finish docstrings
 - [ ] use mostly just conn instead of conn, cur pairs
 - [x] read over all code and improve quality
-- [ ] type hinting
+- [x] type hinting
 - [ ] handle time stuff better, probably with datetime objects
