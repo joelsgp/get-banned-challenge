@@ -24,8 +24,8 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 # jinja ninja
 jinja_env = jinja2.Environment(
-    loader=jinja2.PackageLoader("app", "templates"),
-    autoescape=jinja2.select_autoescape(["html", "xml"])
+    loader=jinja2.PackageLoader("app"),
+    autoescape=jinja2.select_autoescape()
 )
 
 
