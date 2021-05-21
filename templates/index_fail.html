@@ -6,7 +6,8 @@
     <script type="text/javascript">
         function format_time (iso_time) {
             let date = new Date(iso_time);
-            return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+            let date_formatted = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+            document.write(date_formatted);
         }
     </script>
 </head>
