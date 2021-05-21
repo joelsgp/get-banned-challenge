@@ -25,8 +25,9 @@ app.wsgi_app = ProxyFix(app.wsgi_app)
 
 
 # jinja ninja
+# todo: submit bug report for error when using PackageLoader
 jinja_env = jinja2.Environment(
-    loader=jinja2.PackageLoader("app"),
+    loader=jinja2.FileSystemLoader("templates"),
     autoescape=jinja2.select_autoescape()
 )
 
