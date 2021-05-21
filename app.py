@@ -14,25 +14,17 @@ GEOIPIFY_API_KEY = os.environ["GEOIPIFY_API_KEY"]
 # This is the enforced interval between providing new words.
 # INTERVAL_HOURS = 6
 INTERVAL_HOURS = 0.005
-# This determines whether the app will tell the user the progress
-# through the words.
-# I think I'll keep it turned off at the start because it will be more
-# encouraging.
-# Right now it's turned on for testing.
+# This determines whether the app will tell the user the progress through the words.
 SHOW_INFO = True
 
 
-# Create "app"
 app = flask.Flask(__name__)
-
-# This makes it so that request.remote_addr will
-# show the real ip and not localhost.
+# This makes it so that request.remote_addr will show the real ip and not localhost.
 app.wsgi_app = ProxyFix(app.wsgi_app)
-
 # Initialise the geoip extension.
 simple_geoip = flask_simple_geoip.SimpleGeoIP(app)
 
-# Configure Jinja environment.
+
 # jinja ninja
 jinja_env = jinja2.Environment(
     loader=jinja2.PackageLoader("app", "templates"),
@@ -47,11 +39,9 @@ def simple_geoip_get_timezone():
     """
     geoip_data = simple_geoip.get_geoip_data()
     if geoip_data is None:
-        timezone = None
+        return None
     else:
-        timezone = geoip_data["location"]["timezone"]
-
-    return timezone
+        return geoip_data["location"]["timezone"]
 
 
 def str_next_request_available(request_interval_seconds, timezone):
@@ -62,7 +52,7 @@ def str_next_request_available(request_interval_seconds, timezone):
         timezone -- tz in the format +-xx:00
     Returns the next request available time as an HH:MM string.
     """
-    print("Logs: This IP timezone {}".format(timezone))
+    print(f"Logs: This IP timezone {timezone}")
     # Calculate the next time a request can be made in seconds
     next_request_seconds = time.time() + request_interval_seconds
     # Calculate the timezone in seconds west of UTC
@@ -73,7 +63,6 @@ def str_next_request_available(request_interval_seconds, timezone):
     # Calculate the next request time in seconds for that timezone
     next_request_local = next_request_seconds - timezone_seconds
 
-    # Format the time as a string
     next_request_struct_time = time.gmtime(next_request_local)
     next_request_str = time.strftime("%H:%M", next_request_struct_time)
     return next_request_str
@@ -92,68 +81,58 @@ def meets_interval_requirements(conn, cur, request_ip):
         the last words given to that user
         the timezone of the user as provided by simple_geoip_get_timezone
     """
-    # Get the enforced interval between providing new words in seconds.
     interval_seconds = INTERVAL_HOURS * (60**2)
     
     # Check if IP is in the recent IPs from the database.
-    cur.execute("""
-                SELECT access_time, last_message, timezone FROM recent_ips
-                WHERE ip = %s
-                """,
-                (request_ip,))
+    cur.execute(
+        "SELECT access_time, last_message, timezone FROM recent_ips WHERE ip = %s",
+        (request_ip,)
+    )
     sql_response = cur.fetchone()
     
     # If the SQL response is not None, it means the IP is there.
     if sql_response:
-        # Get the last access time, last message, and timezone of the IP.
         request_timestamp = sql_response[0]
         last_message = sql_response[1]
         timezone = sql_response[2]
-        print("Logs: last request by this IP at {}".format(request_timestamp))
+        print(f"Logs: last request by this IP at {request_timestamp}")
 
-        # If the timezone recorded is None, try to get the timezone.
+        # If the timezone recorded is None, try to get the timezone and record it.
         if not timezone:
             timezone = simple_geoip_get_timezone()
-
-            cur.execute("UPDATE recent_ips SET timezone = %s WHERE ip = %s",
-                        (timezone, request_ip))
+            cur.execute(
+                "UPDATE recent_ips SET timezone = %s WHERE ip = %s",
+                (timezone, request_ip)
+            )
         
         # Calculate the time since last request.
-        request_interval_seconds = time.time()-request_timestamp
+        request_interval_seconds = time.time() - request_timestamp
         
         # Check if IP requested less than 6 hours ago
         if request_timestamp > time.time()-interval_seconds:
-            # If the interval has not yet passed, return False.
             return False, request_interval_seconds, last_message, timezone
 
         else:
             # If the interval has passed, reset the timer for the IP.
-            cur.execute("""
-                        UPDATE recent_ips
-                        SET access_time = %s
-                        WHERE ip = %s
-                        """,
-                        (time.time(), request_ip))
+            cur.execute(
+                "UPDATE recent_ips SET access_time = %s WHERE ip = %s",
+                (time.time(), request_ip)
+            )
         
     else:
-        # The IP wasn't there so set the last request time and the last
-        # message served to None for the return value.
+        # The IP wasn't there so set the last request time and the last message served to None for the return value.
         request_interval_seconds = None
         last_message = None
 
-        # Get the timezone from the geoip extension.
         timezone = simple_geoip_get_timezone()
         
         # The IP has never visited before, so add it to the database.
-        cur.execute("""
-                    INSERT INTO recent_ips(ip, access_time, timezone)
-                    VALUES(%s, %s, %s)
-                    """,
-                    (request_ip, time.time(), timezone))
+        cur.execute(
+            "INSERT INTO recent_ips(ip, access_time, timezone) VALUES(%s, %s, %s)",
+            (request_ip, time.time(), timezone)
+        )
 
-    # If the function reaches this point then the interval has passed
-    # or the IP has never made a request before. Return True.
-    # First commit the changes to the SQL server.
+    # If the function reaches this point then the interval has passed or the IP has never made a request before.
     conn.commit()
     return True, request_interval_seconds, last_message, timezone
 
@@ -169,20 +148,15 @@ def mark_words(conn, cur, message_words_tuples, used=True):
     Returns nothing.
     """
     # Even newer and more efficient way to mark all words as used at once.
-    # Generate the list of ID's and the string of format strings
-    # into which they will be substituted.
+    # Generate the list of ID's and the string of format string markers into which they will be substituted.
     args_list = [sql_response[0] for sql_response in message_words_tuples]
     args_list = [used] + args_list
-    args_template_str = "%s,"*(len(message_words_tuples)-1) + "%s"
+    args_template_str = ",".join(["%s"] * len(message_words_tuples))
     # Execute the update on the SQL server as a single query.
-    cur.execute("""
-                UPDATE wordlist
-                SET used = %s
-                WHERE id IN ({})
-                """.format(args_template_str),
-                tuple(args_list))
-    
-    # Commit the changes to the SQL server.
+    cur.execute(
+        "UPDATE wordlist SET used = %s WHERE id IN ({})".format(args_template_str),
+        tuple(args_list)
+    )
     conn.commit()
 
 
@@ -198,22 +172,17 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
         The message as a string
         A list of tuples of (word id, word)
     """
-    # This variable will track the cumulative length of each word chosen.
+    # cumulative length of words chosen
     cum_length = 0
     # The actual length limit will be the regular one minus the suffix length.
     len_limit_actual = len_limit-len(suffix)
-    # Declare a variables for the message words as an empty list.
-    # message_words = []
     message_words_tuples = []
 
     # Fetch a number of random words from the server.
-    cur.execute("""
-                SELECT id,word FROM wordlist
-                WHERE used = FALSE
-                ORDER BY RAND()
-                LIMIT %s
-                """,
-                (int(len_limit_actual/2),))
+    cur.execute(
+        "SELECT id,word FROM wordlist WHERE used = FALSE ORDER BY RAND() LIMIT %s",
+        (int(len_limit_actual/2),)
+    )
 
     # If no words were left, return this.
     if cur.fetchone() is None:
@@ -225,7 +194,6 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
     # Keep adding words until you reach the message char limit.
     print("Logs: Generating message.")
     while cum_length < len_limit_actual:
-        
         sql_response = cur.fetchone()
         word = sql_response[1]
 
@@ -240,7 +208,7 @@ def generate_message(conn, cur, len_limit=2000, suffix=" Heap."):
     # Join and return the message.
     message = " ".join(word_tuple[1] for word_tuple in message_words_tuples)
     message += suffix
-    print("Logs: Generated message with length {}.".format(len(message)))
+    print(f"Logs: Generated message with length {len(message)}.")
     # Here is your message!
     print("Logs: Here is your message!")
     return message, message_words_tuples
@@ -255,14 +223,10 @@ def record_message(conn, cur, request_ip, message, message_words_tuples):
         request_ip -- IP address as a string
         message -- last message given to the address, as a single string
     """
-    cur.execute("""
-                UPDATE recent_ips
-                SET last_message = %s, lastm_tuples = %s
-                WHERE ip = %s
-                """,
-                (message, json.dumps(message_words_tuples), request_ip))
-    
-    # Commit the changes to the SQL server.
+    cur.execute(
+        "UPDATE recent_ips SET last_message = %s, lastm_tuples = %s WHERE ip = %s",
+        (message, json.dumps(message_words_tuples), request_ip)
+    )
     conn.commit()
 
 
@@ -284,31 +248,25 @@ def get_info(conn, cur):
 
     used_words_percent = round((used_words / len_wordlist) * 100, 2)
 
-    # Generate the info message.
-    info = """
-           Thanks to your help,
-           we've gone through {} out of {} words already.
-           That's {} percent (2d.p.)! 
-           """.format(used_words, len_wordlist, used_words_percent)
-
-    # Return the info message.
+    info = (
+        "Thanks to your help, "
+        f"we've gone through {used_words} out of {len_wordlist} words already. "
+        f"That's {used_words_percent} percent!"
+    )
     return info
 
 
 @app.route("/")
 def hello_world():
     """Serve the homepage."""
-    # Get IP for duplication checking.
     request_ip = flask.request.remote_addr
 
-    # Connect to MySQL database.
     conn, cur = mysql_connect()
 
     # check will be True if we are ok to send new words.
     req_cooldown_ok, request_interval_seconds, last_message, timezone \
         = meets_interval_requirements(conn, cur, request_ip)
-    # Get the request interval in hours, or assign it as None if
-    # there was no prior request by this IP.
+    # Get the request interval in hours, or assign it as None if there was no prior request by this IP.
     if request_interval_seconds:
         request_interval_hours = request_interval_seconds / (60**2)
         request_interval_hours = round(request_interval_hours, 4)
@@ -319,61 +277,54 @@ def hello_world():
         next_request_available = \
             str_next_request_available(request_interval_seconds, timezone)
         
-        print("""
-              Logs: {} - Unsuccessful request.
-              Last requested {} hours ago.
-              Required interval is {} hours.
-              """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
+        print(
+            f"Logs: {request_ip} - Unsuccessful request. "
+            f"Last requested {request_interval_hours} hours ago. "
+            f"Required interval is {INTERVAL_HOURS} hours."
+        )
 
         # Get Jinja html template, fill and serve.
         html_template = jinja_env.get_template("index_fail.html")
-        return html_template.render(request_ip=request_ip,
-                                    last_interval=request_interval_hours,
-                                    next_available=next_request_available,
-                                    timezone=timezone,
-                                    interval_hours=INTERVAL_HOURS,
-                                    last_message=last_message)
+        return html_template.render(
+            request_ip=request_ip, last_interval=request_interval_hours, next_available=next_request_available,
+            timezone=timezone, interval_hours=INTERVAL_HOURS, last_message=last_message
+        )
 
     else:
-        print("""
-              Logs: {} - Successful request.
-              Last requested {} hours ago.
-              Required interval is {} hours.
-              """.format(request_ip, request_interval_hours, INTERVAL_HOURS))
+        print(
+              f"Logs: {request_ip} - Successful request. "
+              f"Last requested {request_interval_hours} hours ago."
+              f"Required interval is {INTERVAL_HOURS} hours."
+        )
 
         # Get the actual message with the words.
         message, message_words_tuples = generate_message(conn, cur)
         # Record the message to the database.
         record_message(conn, cur, request_ip, message, message_words_tuples)
-        # Choose whether to get the info on progress based on SHOW_INFO.
         if SHOW_INFO:
             info = get_info(conn, cur)
         else:
             info = ""
 
-        # Get Jinja html template, fill and serve.
         html_template = jinja_env.get_template("index_success.html")
-        return html_template.render(request_ip=request_ip, timezone=timezone,
-                                    info=info, message=message)
+        return html_template.render(
+            request_ip=request_ip, timezone=timezone, info=info, message=message
+        )
 
 
 @app.route("/undo")
 def undo_message():
     """Serve the undo page, which attempts to undo your last request by marking the words as unused.    """
-    # Get IP for finding its last message, if any.
     request_ip = flask.request.remote_addr
-    
-    # Connect to MySQL database.
+
     conn, cur = mysql_connect()
 
-    # A little reused code from meets_interval_requirements here,
-    # could I improve that?
+    # A little reused code from meets_interval_requirements here, should I improve that?
     # Check if IP is in the recent IPs from the database.
-    cur.execute("""
-                SELECT last_message, lastm_tuples FROM recent_ips
-                WHERE ip = %s
-                """,
-                (request_ip,))
+    cur.execute(
+        "SELECT last_message, lastm_tuples FROM recent_ips WHERE ip = %s",
+        (request_ip,)
+    )
     sql_response = cur.fetchone()
     
     # If the SQL response is not None, it means the IP is there.
@@ -383,56 +334,41 @@ def undo_message():
 
         # If the list is empty it means the last message was already undone.
         if not last_message_words_lists:
-            print("""
-                  Logs: {} - Unsuccessful undo.
-                  Last message already undone.
-                  """.format(request_ip))
-            
-            # Close connection to the SQL server.
+            print(f"Logs: {request_ip} - Unsuccessful undo. Last message already undone.")
+
             mysql_disconnect(conn, cur)
-            
-            # Get Jinja html template and serve.
+
             html_template = jinja_env.get_template("undo_already.html")
             return html_template.render()
                                     
         else:
-            print("""
-                  Logs: {} - Successful undo.
-                  """.format(request_ip))
+            print(f"Logs: {request_ip} - Successful undo.")
             
             # Mark all words from the last message as unused.
             mark_words(conn, cur, last_message_words_lists, used=False)
-            # Update database to allow new words to be requested immediately
-            # and to mark the last message as undone.
+            # Update database to allow new words to be requested immediately and to mark the last message as undone.
             cur.execute("""
                         UPDATE recent_ips
-                        SET access_time = %s,
-                        last_message='You undid the last message!',
-                        lastm_tuples=%s
+                        SET access_time = %s, last_message='You undid the last message!', lastm_tuples=%s
                         WHERE ip = %s
                         """,
-                        (time.time()-(INTERVAL_HOURS*60**2),
-                         json.dumps([]),
-                         request_ip))
-
-            # Commit the changes and close connection to the SQL server.
+                        (
+                            time.time()-(INTERVAL_HOURS*60**2),
+                            json.dumps([]),
+                            request_ip
+                        )
+                        )
             conn.commit()
             mysql_disconnect(conn, cur)
-            
-            # Get Jinja html template, fill and serve.
+
             html_template = jinja_env.get_template("undo_success.html")
             return html_template.render(last_message=last_message)
 
     else:
-        print("""
-              Logs: {} - Unsuccessful undo.
-              No message requested before by this IP.
-              """.format(request_ip))
-        
-        # Close connection to the SQL server.
+        print(f"Logs: {request_ip} - Unsuccessful undo. No message requested before by this IP.")
+
         mysql_disconnect(conn, cur)
-        
-        # Get Jinja html template and serve.
+
         html_template = jinja_env.get_template("undo_none.html")
         return html_template.render()
 

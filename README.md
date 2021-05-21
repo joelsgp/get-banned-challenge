@@ -54,7 +54,8 @@ Update: the word was revealed by accident. It was Epäjärjestelmällistyttämä
 
 ### rewrite
 - [ ] remove geoip and user frontend thing instead (didn't I write this down somewhere already?)
-- [ ] finish docstrings
+- [x] finish docstrings
 - [ ] use mostly just conn instead of conn, cur pairs
 - [ ] read over all code and improve quality
-
+- [ ] type hinting
+- [ ] handle time stuff better, probably with datetime objects
