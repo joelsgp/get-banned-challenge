@@ -1,11 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel='icon' href='favicon.ico' type='image/x-icon'/>
     <title>:( Gameboy Colour</title>
+
+    <script type="text/javascript">
+        function format_time (iso_time) {
+            let date = new Date(iso_time);
+            return `${date.getHours()}:${date.getMinutes()}`;
+        }
+    </script>
 </head>
 <body>
-  IP duplication error: {{ request_ip }}, you already requested words {{ last_interval }} hour(s) ago! You can next request at {{ next_available }} (UTC{{ timezone }}).
+  IP duplication error: {{ request_ip }}, you already requested words {{ last_interval }} hour(s) ago! You can next request at <script type="text/javascript">format_time("{{ next_available }}");</script>.
     Please ensure you wait at least {{ interval_hours }} hours before requesting new words.
     <br>
     Note: this is the beta, in the real thing the cooldown interval will be 6 hours which is the slowmode on the #get-banned-challenge channel.

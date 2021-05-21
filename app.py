@@ -4,7 +4,6 @@ import time
 
 import flask
 import jinja2
-import flask_simple_geoip
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from jmcb_mysql import mysql_connect, mysql_disconnect
@@ -30,18 +29,6 @@ jinja_env = jinja2.Environment(
     loader=jinja2.PackageLoader("app", "templates"),
     autoescape=jinja2.select_autoescape(["html", "xml"])
 )
-
-
-def simple_geoip_get_timezone():
-    """Get the timezone of a request within a Flask app using flask_simple_geoip.
-
-    Returns the timezone as a string, or None if failed.
-    """
-    geoip_data = simple_geoip.get_geoip_data()
-    if geoip_data is None:
-        return None
-    else:
-        return geoip_data["location"]["timezone"]
 
 
 def str_next_request_available(request_interval_seconds, timezone):
